@@ -16,9 +16,9 @@ DISTFILES = $(SRCS) $(DOCS) modconfig.h.in configure install-sh ChangeLog Makefi
 DISTDIR = @PACKAGE@-@VERSION@
 
 all:	module
-		echo "Compilation complete."
-		echo "Run 'make install' (or 'gmake install' on some systems) to install."
-		echo "If you require support, see the README file."
+		@echo "Compilation complete."
+		@echo "Run 'make install' (or 'gmake install' on some systems) to install."
+		@echo "If you require support, see the README file."
 
 # include dependency info 
 @MAKEDEPENDENCIES@
@@ -39,7 +39,7 @@ install: module
 	@echo "Installation complete."
 	@echo "Change directory to '@prefix@' then run './neostats'"
 	@echo "If you require support, see the README file."
-
+	
 dist:	
 	@echo -n "Creating Directories"
 	@-rm -rf $(DISTDIR)
