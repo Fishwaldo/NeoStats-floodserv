@@ -105,6 +105,7 @@ const char *fs_help_set_chanlockkey[] =
 {
 	"\2CHANLOCKKEY <key>\2",
 	"Key to use for locking the channel when flood protection is active",
+	"If key is set to 'random', FloodServ will generate random keys",
 	NULL
 };
 
