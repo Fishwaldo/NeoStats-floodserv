@@ -26,6 +26,11 @@
  *  - Option to ignore registered nicks in AJPP checks
  */
 
+#ifdef WIN32
+#include "win32modconfig.h"
+#else
+#include "modconfig.h"
+#endif
 #include "neostats.h"
 #include "floodserv.h"
 
@@ -110,7 +115,7 @@ ModuleInfo module_info =
 	fs_copyright,
 	fs_about,
 	NEOSTATS_VERSION,
-	"3.0prealpha",
+	MODULE_VERSION,
 	__DATE__,
 	__TIME__,
 	0,
@@ -119,16 +124,16 @@ ModuleInfo module_info =
 
 static bot_setting fs_settings[]=
 {
-	{"VERBOSE",			&fscfg.verbose,			SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,"verbose",			NULL,		fs_help_set_chanlocktime, NULL,( void * )1 },
+	{"VERBOSE",			&fscfg.verbose,			SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,"verbose",			NULL,		fs_help_set_verbose, NULL,( void * )1 },
 	{"NICKFLOOD",		&fscfg.nickflood,		SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,"nickfloodhash",	NULL,		fs_help_set_nickflood, NULL,( void * )1 },
 	{"NICKFLOODACT",	&fscfg.nickfloodact,	SET_TYPE_INT,		0,	0,			NS_ULEVEL_ADMIN,"nickfloodact",		NULL,		fs_help_set_nickfloodact, NULL,( void * )0 },
-	{"NICKSAMPLETIME",	&fscfg.nicksampletime,	SET_TYPE_INT,		0,	100,		NS_ULEVEL_ADMIN,"nicksampletime",	NULL,		fs_help_set_nicksampletime, NULL,( void * )5 },
+	{"NICKSAMPLETIME",	&fscfg.nicksampletime,	SET_TYPE_INT,		0,	100,		NS_ULEVEL_ADMIN,"nicksampletime",	"seconds",	fs_help_set_nicksampletime, NULL,( void * )5 },
 	{"NICKTHRESHOLD",	&fscfg.nickthreshold,	SET_TYPE_INT,		0,	100,		NS_ULEVEL_ADMIN,"nickthreshold",	NULL,		fs_help_set_nickthreshold, NULL,( void * )5 },
 	{"JOINFLOOD",		&fscfg.joinflood,		SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,"joinflood",		NULL,		fs_help_set_joinflood, NULL,( void * )1 },
-	{"JOINFLOODACT",	&fscfg.joinfloodact,	SET_TYPE_INT,		0,	0,			NS_ULEVEL_ADMIN,"joinfloodact",		NULL,		fs_help_set_joinfloodact, NULL,( void * )0 },
+	{"JOINFLOODACT",	&fscfg.joinfloodact,	SET_TYPE_INT,		0,	1,			NS_ULEVEL_ADMIN,"joinfloodact",		NULL,		fs_help_set_joinfloodact, NULL,( void * )0 },
 	{"JOINSAMPLETIME",	&fscfg.joinsampletime,	SET_TYPE_INT,		1,	1000,		NS_ULEVEL_ADMIN,"joinsampletime",	"seconds",	fs_help_set_joinsampletime, NULL,( void * )5 },
 	{"JOINTHRESHOLD",	&fscfg.jointhreshold,	SET_TYPE_INT,		1,	1000,		NS_ULEVEL_ADMIN,"jointhreshold",	NULL,		fs_help_set_jointhreshold, NULL,( void * )5 },
-	{"CHANLOCKKEY",		&fscfg.chanlockkey,		SET_TYPE_STRING,	0,	MAXCHANLEN,	NS_ULEVEL_ADMIN, "chanlockkey",		NULL,		fs_help_set_chanlockkey, NULL,( void * )"Eeeek" },
+	{"CHANLOCKKEY",		&fscfg.chanlockkey,		SET_TYPE_STRING,	0,	MAXCHANLEN,	NS_ULEVEL_ADMIN, "chanlockkey",		NULL,		fs_help_set_chanlockkey, NULL,( void * )"yeklennahc" },
 	{"CHANLOCKTIME",	&fscfg.chanlocktime,	SET_TYPE_INT,		0,	600,		NS_ULEVEL_ADMIN,"chanlocktime",		NULL,		fs_help_set_chanlocktime, NULL,( void * )30 },
 	{NULL,				NULL,					0,					0,	0, 			0,				NULL,				NULL,		NULL, NULL },
 };
@@ -217,16 +222,26 @@ static int fs_event_joinchan( CmdParams *cmdparams )
 	dlog( DEBUG2, "check join flood: %d %d", ci->ajpp,  fscfg.jointhreshold );
 	if( ( ci->ajpp > fscfg.jointhreshold ) && ( ci->locked == 0 ) ) 
 	{
-		nlog( LOG_WARNING, "Warning, possible flood on %s. Closing channel.( AJPP: %d/%d Sec, SampleTime %d", ci->c->name, ci->ajpp,( int )( me.now - ci->ts_lastjoin ), fscfg.joinsampletime );
-		irc_chanalert( fs_bot, "Warning, possible flood on %s. Closing channel.( AJPP: %d/%d Sec, SampleTime %d )", ci->c->name, ci->ajpp,( int )( me.now - ci->ts_lastjoin ), fscfg.joinsampletime );			
-		irc_globops( fs_bot, "Warning, possible flood on %s. Closing channel.( AJPP: %d/%d Sec, SampleTime %d )", ci->c->name, ci->ajpp,( int )( me.now - ci->ts_lastjoin ), fscfg.joinsampletime );			
-		irc_chanprivmsg( fs_bot, ci->c->name, "Temporarily closing channel due to possible floodbot attack. Channel will be re-opened in %d seconds", fscfg.chanlocktime );
-		/* close flood channel */
-		if( fscfg.joinfloodact ) 
+		switch( fscfg.joinfloodact ) 
 		{
-			irc_cmode( fs_bot, ci->c->name, "+ik", fscfg.chanlockkey );
+			case 0:
+				/* warn only */
+				nlog( LOG_WARNING, "Warning, possible flood on %s. AJPP: %d/%d sec, SampleTime %d", ci->c->name, ci->ajpp,( int )( me.now - ci->ts_lastjoin ), fscfg.joinsampletime );
+				irc_chanalert( fs_bot, "Warning, possible flood on %s. AJPP: %d/%d sec, SampleTime %d", ci->c->name, ci->ajpp,( int )( me.now - ci->ts_lastjoin ), fscfg.joinsampletime );
+				irc_globops( fs_bot, "Warning, possible flood on %s. AJPP: %d/%d Sec, SampleTime %d", ci->c->name, ci->ajpp,( int )( me.now - ci->ts_lastjoin ), fscfg.joinsampletime );
+				break;
+			case 1:
+				/* close flood channel */
+				nlog( LOG_WARNING, "Warning, possible flood on %s. Closing channel. AJPP: %d/%d sec, SampleTime %d", ci->c->name, ci->ajpp,( int )( me.now - ci->ts_lastjoin ), fscfg.joinsampletime );
+				irc_chanalert( fs_bot, "Warning, possible flood on %s. Closing channel. AJPP: %d/%d sec, SampleTime %d", ci->c->name, ci->ajpp,( int )( me.now - ci->ts_lastjoin ), fscfg.joinsampletime );
+				irc_globops( fs_bot, "Warning, possible flood on %s. Closing channel. AJPP: %d/%d Sec, SampleTime %d", ci->c->name, ci->ajpp,( int )( me.now - ci->ts_lastjoin ), fscfg.joinsampletime );
+				irc_chanprivmsg( fs_bot, ci->c->name, "Temporarily closing channel due to possible floodbot attack. Channel will be re-opened in %d seconds", fscfg.chanlocktime );
+				irc_cmode( fs_bot, ci->c->name, "+ik", fscfg.chanlockkey );
+				ci->locked = me.now;
+				break;
+			default:
+				break;
 		}
-		ci->locked = me.now;
 	}
 	/* just some record keeping */
 	if( ci->ajpp > MaxAJPP ) 

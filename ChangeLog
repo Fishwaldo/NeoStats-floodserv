@@ -1,6 +1,6 @@
 FloodServ Module for NeoStats Changelog.
 ==============================================================================
-3.0 - Mark (M)
+3.0.a1-dev - Mark (M)
  - Add action options to flood events. We can now warn only or lock channels
    for a join flood. (M).
  - Associate flood structures with channel/user so we get faster lookups on a
