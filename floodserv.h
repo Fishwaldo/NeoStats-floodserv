@@ -26,16 +26,14 @@
 
 extern const char fs_help_status_oneline[];
 extern const char *fs_help_status[];
-
-
-const char *fs_help_set_chankey[];
-const char *fs_help_set_floodprot[];
-const char *fs_help_set_chanlocktime[];
-const char *fs_help_set_nickthreshold[];
-const char *fs_help_set_nicksampletime[];
-const char *fs_help_set_dojoin[];
-const char *fs_help_set_verbose[];
-const char *fs_help_set_joinsampletime[];
-const char *fs_help_set_jointhreshold[];
+extern const char *fs_help_set_chankey[];
+extern const char *fs_help_set_floodprot[];
+extern const char *fs_help_set_chanlocktime[];
+extern const char *fs_help_set_nickthreshold[];
+extern const char *fs_help_set_nicksampletime[];
+extern const char *fs_help_set_dojoin[];
+extern const char *fs_help_set_verbose[];
+extern const char *fs_help_set_joinsampletime[];
+extern const char *fs_help_set_jointhreshold[];
 
 #endif /* _FLOODSERV_H_ */
