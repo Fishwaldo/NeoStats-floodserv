@@ -171,6 +171,16 @@ static int fs_cmd_status( CmdParams *cmdparams )
 	return NS_SUCCESS;
 }
 
+static chantrack *fs_new_channel( Channel* channel )
+{
+	chantrack *ci;
+
+	ci = ( chantrack * ) AllocChannelModPtr( channel, sizeof( chantrack ) );
+	ci->c = channel;
+	hnode_create_insert( joinfloodhash, ci, channel->name );	
+	return ci;
+}
+
 static int fs_event_joinchan( CmdParams *cmdparams )
 {
 	chantrack *ci;
@@ -186,7 +196,11 @@ static int fs_event_joinchan( CmdParams *cmdparams )
 		dlog( DEBUG1, "Ignoring netsplit nick %s", cmdparams->source->name );
 		return NS_SUCCESS;
 	}
-	ci = ( chantrack * ) GetChannelModPtr( cmdparams->channel );	
+	ci = ( chantrack * ) GetChannelModPtr( cmdparams->channel );
+	if( !ci )
+	{
+		ci = fs_new_channel( cmdparams->channel );
+	}
 	/* if the last join was "SampleTime" seconds ago
 	 * reset the time and set ajpp to 1
 	 */
@@ -230,12 +244,8 @@ static int fs_event_joinchan( CmdParams *cmdparams )
 
 static int fs_event_newchan( CmdParams *cmdparams )
 {
-	chantrack *ci;
-
 	dlog( DEBUG2, "Creating channel record for %s", cmdparams->channel->name );
-	ci = ( chantrack * ) AllocChannelModPtr( cmdparams->channel, sizeof( chantrack ) );
-	ci->c = cmdparams->channel;
-	hnode_create_insert( joinfloodhash, ci, cmdparams->channel->name );	
+	fs_new_channel( cmdparams->channel );
 	return NS_SUCCESS;
 }
 
