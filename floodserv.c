@@ -41,7 +41,7 @@ struct fscfg
 	int nicksampletime;
 	int jointhreshold;
 	int joinsampletime;
-	char chanlockkey[MAXCHANLEN];
+	char chanlockkey[KEYLEN];
 	int chanlocktime;
 	int nickflood;
 	int nickfloodact;
@@ -133,7 +133,7 @@ static bot_setting fs_settings[]=
 	{"JOINFLOODACT",	&fscfg.joinfloodact,	SET_TYPE_INT,		0,	1,			NS_ULEVEL_ADMIN,"joinfloodact",		NULL,		fs_help_set_joinfloodact, NULL,( void * )0 },
 	{"JOINSAMPLETIME",	&fscfg.joinsampletime,	SET_TYPE_INT,		1,	1000,		NS_ULEVEL_ADMIN,"joinsampletime",	"seconds",	fs_help_set_joinsampletime, NULL,( void * )5 },
 	{"JOINTHRESHOLD",	&fscfg.jointhreshold,	SET_TYPE_INT,		1,	1000,		NS_ULEVEL_ADMIN,"jointhreshold",	NULL,		fs_help_set_jointhreshold, NULL,( void * )5 },
-	{"CHANLOCKKEY",		&fscfg.chanlockkey,		SET_TYPE_STRING,	0,	MAXCHANLEN,	NS_ULEVEL_ADMIN, "chanlockkey",		NULL,		fs_help_set_chanlockkey, NULL,( void * )"yeklennahc" },
+	{"CHANLOCKKEY",		&fscfg.chanlockkey,		SET_TYPE_STRING,	0,	KEYLEN,		NS_ULEVEL_ADMIN, "chanlockkey",		NULL,		fs_help_set_chanlockkey, NULL,( void * )"yeklennahc" },
 	{"CHANLOCKTIME",	&fscfg.chanlocktime,	SET_TYPE_INT,		0,	600,		NS_ULEVEL_ADMIN,"chanlocktime",		NULL,		fs_help_set_chanlocktime, NULL,( void * )30 },
 	{NULL,				NULL,					0,					0,	0, 			0,				NULL,				NULL,		NULL, NULL },
 };
@@ -236,7 +236,18 @@ static int fs_event_joinchan( CmdParams *cmdparams )
 				irc_chanalert( fs_bot, "Warning, possible flood on %s. Closing channel. AJPP: %d/%d sec, SampleTime %d", ci->c->name, ci->ajpp,( int )( me.now - ci->ts_lastjoin ), fscfg.joinsampletime );
 				irc_globops( fs_bot, "Warning, possible flood on %s. Closing channel. AJPP: %d/%d Sec, SampleTime %d", ci->c->name, ci->ajpp,( int )( me.now - ci->ts_lastjoin ), fscfg.joinsampletime );
 				irc_chanprivmsg( fs_bot, ci->c->name, "Temporarily closing channel due to possible floodbot attack. Channel will be re-opened in %d seconds", fscfg.chanlocktime );
-				irc_cmode( fs_bot, ci->c->name, "+ik", fscfg.chanlockkey );
+				if( !ircstrcasecmp( fscfg.chanlockkey, "random" ) )
+				{
+					char *key;
+
+					key = GetRandomChannelKey( 9 );
+					irc_cmode( fs_bot, ci->c->name, "+ik", key );
+					ns_free( key );
+				} 
+				else
+				{
+					irc_cmode( fs_bot, ci->c->name, "+ik", fscfg.chanlockkey );
+				}
 				ci->locked = me.now;
 				break;
 			default:
@@ -299,7 +310,7 @@ int CheckLockChan( void )
 		{
 			if( fscfg.joinfloodact ) 
 			{
-				irc_cmode( fs_bot, ci->c->name, "-ik", fscfg.chanlockkey );
+				irc_cmode( fs_bot, ci->c->name, "-ik", ci->c->key );
 				nlog( LOG_NOTICE, "Unlocking %s after flood protection timeout", ci->c->name );
 				irc_chanalert( fs_bot, "Unlocking %s after flood protection timeout", ci->c->name );
 				irc_globops( fs_bot, "Unlocking %s after flood protection timeout", ci->c->name );
@@ -308,7 +319,7 @@ int CheckLockChan( void )
 			ci->locked = 0;
 		}					
 	}
-	return 1;
+	return NS_SUCCESS;
 }
 
 /* scan nickname changes */
@@ -429,7 +440,7 @@ int ModSynch( void )
 	}
 	AddTimer( TIMER_TYPE_INTERVAL, CheckLockChan, "CheckLockChan", 60 );
 	return NS_SUCCESS;
-};
+}
 
 /** Fini module
  * This is required if you need to do cleanup of your module when it ends

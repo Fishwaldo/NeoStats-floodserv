@@ -1,5 +1,8 @@
 FloodServ Module for NeoStats Changelog.
 ==============================================================================
+3.0.a2-dev - Mark (M)
+ - Add support for random keys based on idea from DNB. (M)
+
 3.0.a1 - Mark (M)
  - Add action options to flood events. We can now warn only or lock channels
    for a join flood. (M).
