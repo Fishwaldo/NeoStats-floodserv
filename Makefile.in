@@ -15,7 +15,10 @@ DOCS = README.FloodServ
 DISTFILES = $(SRCS) $(DOCS) modconfig.h.in configure install-sh ChangeLog Makefile.in floodserv.h RelNotes.txt
 DISTDIR = @PACKAGE@-@VERSION@
 
-all:	 module
+all:	module
+		echo "Compilation complete."
+		echo "Run 'make install' (or 'gmake install' on some systems) to install."
+		echo "If you require support, see the README file."
 
 # include dependency info 
 @MAKEDEPENDENCIES@
@@ -25,14 +28,17 @@ all:	 module
 	$(CC) -MM $(INCLUDES) -c $< > $*.d
 
 module:	 $(OBJS)
-	 $(LD) -shared -o $(TARGET) $(OBJS) $(LDFLAGS)
+	$(LD) -shared -o $(TARGET) $(OBJS) $(LDFLAGS)
 
 clean:
-	 /bin/rm -rf $(TARGET) *.o Makefile *.log modconfig.h
+	/bin/rm -rf $(TARGET) *.o Makefile *.log modconfig.h
 
 install: module
-	 $(INSTALL) -m 644 $(TARGET) $(DIRECTORY)
-	 $(INSTALL) -m 644 $(DOCS) $(DIRECTORY)../doc/
+	$(INSTALL) -m 644 $(TARGET) $(DIRECTORY)
+	$(INSTALL) -m 644 $(DOCS) $(DIRECTORY)../doc/
+	echo "Installation complete."
+	echo "Change directory to '@prefix@' then run './neostats'"
+	echo "If you require support, see the README file."
 
 dist:	
 	@echo -n "Creating Directories"
