@@ -1,6 +1,6 @@
 FloodServ Module for NeoStats Changelog.
 ==============================================================================
-3.0.a2-dev - Mark (M)
+3.0.a2 - Mark (M)
  - Update settings table to a2 compatible format. (M)
  - Add support for random keys based on idea from DNB. (M)
 
