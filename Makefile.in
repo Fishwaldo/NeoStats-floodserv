@@ -1,3 +1,4 @@
+#Neostats Module Makefile
 CC = @CC@
 CFLAGS = @CFLAGS@
 LDFLAGS= @LDFLAGS@
@@ -13,7 +14,7 @@ TARGET = floodserv.so
 DOCS = README.FloodServ
 DATA =
 SCRIPTS = 
-DISTFILES = $(SRCS) $(DOCS) modconfig.h.in configure install-sh ChangeLog Makefile.in floodserv.h RelNotes.txt
+DISTFILES = $(SRCS) $(DOCS) modconfig.h.in configure install-sh ChangeLog Makefile.in floodserv.h RELNOTES
 DISTDIR = @PACKAGE@-@VERSION@
 
 all:	module

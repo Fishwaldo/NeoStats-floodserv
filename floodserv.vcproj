@@ -164,7 +164,7 @@
 			RelativePath=".\README.FloodServ">
 		</File>
 		<File
-			RelativePath=".\RelNotes.txt">
+			RelativePath=".\Relnotes">
 		</File>
 	</Files>
 	<Globals>
