@@ -376,7 +376,7 @@ int ModSynch (void)
 	if (!fs_bot) {
 		return NS_FAILURE;
 	}
-	add_timer (TIMER_TYPE_INTERVAL, CheckLockChan, "CheckLockChan", 60);
+	AddTimer (TIMER_TYPE_INTERVAL, CheckLockChan, "CheckLockChan", 60);
 	return NS_SUCCESS;
 };
 
