@@ -170,7 +170,7 @@ static int fs_event_joinchan (CmdParams *cmdparams)
 	if (cmdparams->source->flags && NS_FLAGS_NETJOIN) {
 		return NS_SUCCESS;
 	}
-	ci = GetChannelModValue (cmdparams->channel);	
+	ci = (chantrack *) GetChannelModPtr (cmdparams->channel);	
 	/* if the last join was "SampleTime" seconds ago
 	 * reset the time and set ajpp to 1
 	 */
