@@ -12,4 +12,4 @@
 /floodservhelp.c -text
 /install-sh -text
 /modconfig.h.in -text
-/win32modconfig.h -text
+/modconfigwin32.h -text

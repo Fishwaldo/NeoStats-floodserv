@@ -1,2 +1,98 @@
 
 FloodServ Manual
+
+1. Installing and configuring FloodServ
+---------------------------------------
+
+This section explains how to install and configure FloodServ. We 
+recommend that you read this section in full before trying to install 
+FloodServ.
+
+If you have any problems NOT addressed in this or other documents, 
+please see the Support section for how to contact us for help.
+
+
+1.1 General notes
+-----------------
+
+All commands and filenames are case sensitive. This means that 
+NeoStats, floodserv, and FLOODSERV are all different things. When 
+typing commands you should use the same case as provided in this 
+file or things will not work correctly.
+
+
+1.2 Getting Started
+-------------------
+
+First, you need to uncompress FloodServ. To do this type the following:
+
+        tar xvfz FloodServ3.0.x.tar.gz 
+
+This will vary depending on the version you run of FloodServ. Change the 
+x in FloodServ3.0.x.tar.gz to match your filename e.g. 
+
+        FloodServ3.0.0.tar.gz
+
+For systems that don't run a new version of tar you need to do this:
+
+        gzip -d FloodServ3.0.x.tar.gz
+        tar xvf FloodServ3.0.x.tar
+
+1.3 Running configure
+---------------------
+
+You must first run the configure script so that FloodServ can determine
+your build environment.
+
+To run configure, you must first change to the directory where you 
+uncompressed FloodServ. e.g.
+
+        cd ~/FloodServ3.0.0
+
+Your prompt should look something like:
+    
+        [user@host FloodServ3.0.0]
+
+Now type:
+    
+        ./configure
+        
+The configure script will then check to see if all necessary programs to 
+run FloodServ are installed on your system. 
+
+Optional settings:
+------------------
+
+There are some options you can pass to configure if you wish. 
+
+Debugging:
+
+Most users will never look at this option. It compiles FloodServ 
+with debugging turned on. I would only suggest using this if you 
+have problems and are about to fill out a bug form.
+
+        --enable-debug        Enables Debugging
+
+
+1.4 Compiling FloodServ
+-----------------------
+
+Ok, you should now be back at a shell prompt, type:
+
+        make
+
+it will go through the source and compile it into an executable 
+binary file. 
+
+
+1.5 Installing FloodServ
+------------------------
+
+To install FloodServ type:
+
+        make install
+
+This will create the necessary files, and copy them to the 
+installation directory. 
+
+

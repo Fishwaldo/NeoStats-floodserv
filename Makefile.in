@@ -14,7 +14,7 @@ TARGET = floodserv.so
 DOCS = README.FloodServ
 DATA =
 SCRIPTS = 
-DISTFILES = $(SRCS) $(DOCS) modconfig.h.in configure install-sh ChangeLog Makefile.in floodserv.h RELNOTES
+DISTFILES = $(SRCS) $(DOCS) modconfig.h.in configure install-sh ChangeLog Makefile.in floodserv.h LICENSE RELNOTES floodserv.vcproj modconfigwin32.h
 DISTDIR = @PACKAGE@-@VERSION@
 
 all:	module
@@ -33,7 +33,10 @@ module:	 $(OBJS)
 	$(LD) -shared -o $(TARGET) $(OBJS) $(LDFLAGS)
 
 clean:
-	/bin/rm -rf $(TARGET) *.o Makefile *.log modconfig.h
+	/bin/rm -rf $(TARGET) *.o *.d Makefile *.log modconfig.h
+
+distclean:
+	/bin/rm -rf $(TARGET) *.o *.d Makefile *.log modconfig.h config.status configure.scan
 
 install: module
 	$(INSTALL) -m 644 $(TARGET) $(DIRECTORY)

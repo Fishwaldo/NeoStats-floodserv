@@ -137,7 +137,7 @@
 				RelativePath=".\floodserv.h">
 			</File>
 			<File
-				RelativePath=".\win32modconfig.h">
+				RelativePath=".\modconfigwin32.h">
 			</File>
 		</Filter>
 		<Filter
