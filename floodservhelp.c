@@ -41,6 +41,13 @@ const char *fs_help_set_nickflood[] = {
 	NULL
 };
 
+const char *fs_help_set_nickfloodact[] = {
+	"\2NICKFLOODACT <type>\2 - Nick flood action.",
+	"<type> is",
+	"0 : Warn only",
+	NULL
+};
+
 const char *fs_help_set_nickthreshold[] = {
 	"\2NICKTHRESHOLD <number>\2 - Sets the threshold for Nick Floods. <number> is number of changes in 10 seconds.",
 	NULL
@@ -53,6 +60,14 @@ const char *fs_help_set_nicksampletime[] = {
 
 const char *fs_help_set_joinflood[] = {
 	"\2JOINFLOOD <on/off>\2 - Enable channel flood protection.",
+	NULL
+};
+
+const char *fs_help_set_joinfloodact[] = {
+	"\2JOINFLOODACT <type>\2 - Join flood action.",
+	"<type> is",
+	"0 : Warn only",
+	"1 : Lock channel",
 	NULL
 };
 
