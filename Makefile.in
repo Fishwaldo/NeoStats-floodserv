@@ -1,0 +1,52 @@
+#FloodServ Makefile!
+CC = @CC@
+CFLAGS = @CFLAGS@
+LDFLAGS= @LDFLAGS@
+INSTALL = @INSTALL@
+INSTALL_PROGRAM = @INSTALL_PROGRAM@
+INSTALL_DATA = @INSTALL_DATA@
+DIRECTORY = @DIRINST@/modules/
+INCLUDES = -I@DIRINST@/include/ -I.
+
+SRCS= floodserv.c floodservhelp.c 
+OBJS= ${SRCS:.c=.o}
+TARGET= floodserv.so 
+DOCS=README.FloodServ
+DATA=viri.dat
+DISTFILES = $(SRCS) $(DATA) $(DOCS) modconfig.h.in configure install-sh ChangeLog Makefile.in floodserv.h RelNotes.txt
+DISTDIR = @PACKAGE@-@VERSION@
+
+all:	 module
+
+# include dependency info 
+@MAKEDEPENDENCIES@
+
+.c.o:	
+	$(CC) -c $(CFLAGS) $(INCLUDES) $<
+	$(CC) -MM $(INCLUDES) -c $< > $*.d
+
+module:	 $(OBJS)
+	 $(LD) -shared -o $(TARGET) $(OBJS) $(LDFLAGS)
+
+clean:
+	 /bin/rm -rf $(TARGET) *.o Makefile *.log modconfig.h
+
+install: module
+	 $(INSTALL) -m 644 $(TARGET) $(DIRECTORY)
+	 $(INSTALL) -m 644 $(DOCS) $(DIRECTORY)../doc/
+
+dist:	
+	@echo -n "Creating Directories"
+	@-rm -rf $(DISTDIR)
+	@mkdir $(DISTDIR)
+	@echo "Done"
+	@echo -n "Copying Core Distribution Files"
+	@for file in $(DISTFILES); do \
+		echo -n "."; \
+		cp -pr $$file $(DISTDIR)/$$file; \
+	done
+	@echo "Done"
+	@tar -czf $(DISTDIR).tar.gz $(DISTDIR)/*
+	@echo "Tar file $(DISTDIR).tar.gz created, Freshmeat Time"
+
+$(OBJS): Makefile
