@@ -1,3 +1,0 @@
-FloodServ 3.0.a1 Release Notes
-===================================
-- Initial version.

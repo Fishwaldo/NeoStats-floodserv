@@ -3,7 +3,7 @@
 /LICENSE -text
 /Makefile.in -text
 /README.FloodServ -text
-/RelNotes.txt -text
+/RELNOTES -text
 /configure -text
 /configure.in -text
 /floodserv.c -text
