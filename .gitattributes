@@ -8,6 +8,8 @@
 /configure.in -text
 /floodserv.c -text
 /floodserv.h -text
+/floodserv.vcproj -text
 /floodservhelp.c -text
 /install-sh -text
 /modconfig.h.in -text
+/win32modconfig.h -text
