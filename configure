@@ -271,7 +271,7 @@ PACKAGE_VERSION=
 PACKAGE_STRING=
 PACKAGE_BUGREPORT=
 
-ac_unique_file="SecureServ.c"
+ac_unique_file="floodserv.c"
 ac_default_prefix=~/NeoStats3.0/
 # Factoring default headers for most tests.
 ac_includes_default="\
