@@ -36,9 +36,9 @@ clean:
 install: module
 	$(INSTALL) -m 644 $(TARGET) $(DIRECTORY)
 	$(INSTALL) -m 644 $(DOCS) $(DIRECTORY)../doc/
-	echo "Installation complete."
-	echo "Change directory to '@prefix@' then run './neostats'"
-	echo "If you require support, see the README file."
+	@echo "Installation complete."
+	@echo "Change directory to '@prefix@' then run './neostats'"
+	@echo "If you require support, see the README file."
 
 dist:	
 	@echo -n "Creating Directories"
