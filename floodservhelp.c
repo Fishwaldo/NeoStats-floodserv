@@ -111,6 +111,6 @@ const char *fs_help_set_chanlockkey[] =
 const char *fs_help_set_chanlocktime[] = 
 {
 	"\2CHANLOCKTIME <seconds>\2",
-	"Time in seconds to lock a channel for when flood protection is enabled.",
+	"Time in seconds to lock a channel when flood protection is enabled.",
 	NULL
 };
