@@ -62,13 +62,14 @@ typedef struct usertrack {
 /* FloodCheck.c */
 int CheckLockChan (void);
 
-static int fs_event_signon (CmdParams *cmdparams);
-static int fs_event_quit (CmdParams *cmdparams);
-static int fs_event_nick (CmdParams *cmdparams);
-static int fs_event_newchan (CmdParams *cmdparams);
-static int fs_event_delchan (CmdParams *cmdparams);
-static int fs_event_joinchan (CmdParams *cmdparams);
-static int fs_cmd_status (CmdParams *cmdparams);
+static int fs_event_signon( CmdParams *cmdparams );
+static int fs_event_quit( CmdParams *cmdparams );
+static int fs_event_kill( CmdParams *cmdparams );
+static int fs_event_nick( CmdParams *cmdparams );
+static int fs_event_newchan( CmdParams *cmdparams );
+static int fs_event_delchan( CmdParams *cmdparams );
+static int fs_event_joinchan( CmdParams *cmdparams );
+static int fs_cmd_status( CmdParams *cmdparams );
 
 Bot *fs_bot;
 
@@ -148,7 +149,7 @@ ModuleEvent module_events[] = {
 	{ EVENT_NICK,		fs_event_nick},
 	{ EVENT_SIGNON, 	fs_event_signon,	EVENT_FLAG_IGNORE_SYNCH},
 	{ EVENT_QUIT, 		fs_event_quit},
-	{ EVENT_KILL, 		fs_event_quit},
+	{ EVENT_KILL, 		fs_event_kill},
 	{ EVENT_JOIN, 		fs_event_joinchan},
 	{ EVENT_NEWCHAN,	fs_event_newchan,	EVENT_FLAG_IGNORE_SYNCH},
 	{ EVENT_DELCHAN,	fs_event_delchan},
@@ -319,6 +320,23 @@ static int fs_event_quit(CmdParams *cmdparams)
 	SET_SEGV_LOCATION();
 	dlog (DEBUG2, "fs_event_quit: looking for %s", cmdparams->source->name);
 	nfnode = hash_lookup (nickfloodhash, cmdparams->source->name);
+	if (nfnode) {
+		flooduser = hnode_get (nfnode);
+		hash_delete (nickfloodhash, nfnode);
+		FreeUserModPtr (flooduser->u);
+       	hnode_destroy (nfnode);
+	}
+	return NS_SUCCESS;
+}
+
+static int fs_event_kill(CmdParams *cmdparams) 
+{
+	hnode_t *nfnode;
+	usertrack *flooduser;
+
+	SET_SEGV_LOCATION();
+	dlog (DEBUG2, "fs_event_kill: looking for %s", cmdparams->target->name);
+	nfnode = hash_lookup (nickfloodhash, cmdparams->target->name);
 	if (nfnode) {
 		flooduser = hnode_get (nfnode);
 		hash_delete (nickfloodhash, nfnode);
