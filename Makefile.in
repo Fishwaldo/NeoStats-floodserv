@@ -1,4 +1,3 @@
-#FloodServ Makefile!
 CC = @CC@
 CFLAGS = @CFLAGS@
 LDFLAGS= @LDFLAGS@
@@ -12,6 +11,8 @@ SRCS = floodserv.c floodservhelp.c
 OBJS = ${SRCS:.c=.o}
 TARGET = floodserv.so 
 DOCS = README.FloodServ
+DATA =
+SCRIPTS = 
 DISTFILES = $(SRCS) $(DOCS) modconfig.h.in configure install-sh ChangeLog Makefile.in floodserv.h RelNotes.txt
 DISTDIR = @PACKAGE@-@VERSION@
 
@@ -20,7 +21,7 @@ all:	module
 		@echo "Run 'make install' (or 'gmake install' on some systems) to install."
 		@echo "If you require support, see the README file."
 
-# include dependency info 
+# include dependency info
 @MAKEDEPENDENCIES@
 
 .c.o:	
@@ -40,11 +41,11 @@ install: module
 	@echo "See the README file for instructions on loading this module."
 	
 dist:	
-	@echo -n "Creating Directories"
+	@echo -n "Creating directories"
 	@-rm -rf $(DISTDIR)
 	@mkdir $(DISTDIR)
 	@echo "Done"
-	@echo -n "Copying Core Distribution Files"
+	@echo -n "Copying distribution files"
 	@for file in $(DISTFILES); do \
 		echo -n "."; \
 		cp -pr $$file $(DISTDIR)/$$file; \
