@@ -141,11 +141,11 @@ BotInfo fs_botinfo =
 
 ModuleEvent module_events[] = {
 	{ EVENT_NICK,		fs_event_nick},
-	{ EVENT_SIGNON, 	fs_event_signon},
+	{ EVENT_SIGNON, 	fs_event_signon,	EVENT_FLAG_IGNORE_SYNCH},
 	{ EVENT_QUIT, 		fs_event_quit},
 	{ EVENT_KILL, 		fs_event_quit},
 	{ EVENT_JOIN, 		fs_event_joinchan},
-	{ EVENT_NEWCHAN,	fs_event_newchan},
+	{ EVENT_NEWCHAN,	fs_event_newchan,	EVENT_FLAG_IGNORE_SYNCH},
 	{ EVENT_DELCHAN,	fs_event_delchan},
 	{ EVENT_NULL, 		NULL}
 };
