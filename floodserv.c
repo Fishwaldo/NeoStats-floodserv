@@ -172,7 +172,8 @@ static int fs_event_joinchan (CmdParams *cmdparams)
 	if (fscfg.joinflood == 0) {
 		return NS_SUCCESS;
 	}
-	if (cmdparams->source->flags && NS_FLAGS_NETJOIN) {
+	if (IsNetSplit(cmdparams->source)) {
+		dlog (DEBUG1, "Ignoring netsplit nick %s", cmdparams->source->name);
 		return NS_SUCCESS;
 	}
 	ci = (chantrack *) GetChannelModPtr (cmdparams->channel);	
