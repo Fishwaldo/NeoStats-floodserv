@@ -373,7 +373,7 @@ static int fs_event_kill( CmdParams *cmdparams )
 
 /** Init module
  */
-int ModInit( Module *mod_ptr )
+int ModInit( void )
 {
 	SET_SEGV_LOCATION();
 	os_memset( &fscfg, 0, sizeof( fscfg ) );
@@ -409,7 +409,7 @@ int ModSynch( void )
 /** Fini module
  * This is required if you need to do cleanup of your module when it ends
  */
-void ModFini( void ) 
+int ModFini( void )
 {
 	hscan_t scan;
 	hnode_t *node;
@@ -437,4 +437,5 @@ void ModFini( void )
        	hnode_destroy( node );
 	}
 	hash_destroy( nickfloodhash );
+	return NS_SUCCESS;
 }
