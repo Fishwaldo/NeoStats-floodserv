@@ -72,6 +72,35 @@ static hash_t *nickflood;
 static int MaxAJPP = 0;
 static char MaxAJPPChan[MAXCHANLEN];
 
+/** about info */
+const char *fs_about[] = {
+	"Flood protection service",
+	NULL
+};
+
+const char *fs_copyright[] = {
+	"Copyright (c) 1999-2004, NeoStats",
+	"http://www.neostats.net/",
+	NULL
+};
+
+/** Module Info definition 
+ * version information about our module
+ * This structure is required for your module to load and run on NeoStats
+ */
+ModuleInfo module_info = {
+	"FloodServ",
+	"Flood protection service",
+	fs_copyright,
+	fs_about,
+	NEOSTATS_VERSION,
+	"3.0prealpha",
+	__DATE__,
+	__TIME__,
+	0,
+	0,
+};
+
 static bot_setting fs_settings[]=
 {
 	{"FLOODPROT",		&FloodServ.floodprot,		SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,"Dofloodprot",	NULL,	fs_help_set_floodprot, NULL, (void *)1 },
