@@ -8,12 +8,11 @@ INSTALL_DATA = @INSTALL_DATA@
 DIRECTORY = @DIRINST@/modules/
 INCLUDES = -I@DIRINST@/include/ -I.
 
-SRCS= floodserv.c floodservhelp.c 
-OBJS= ${SRCS:.c=.o}
-TARGET= floodserv.so 
-DOCS=README.FloodServ
-DATA=viri.dat
-DISTFILES = $(SRCS) $(DATA) $(DOCS) modconfig.h.in configure install-sh ChangeLog Makefile.in floodserv.h RelNotes.txt
+SRCS = floodserv.c floodservhelp.c 
+OBJS = ${SRCS:.c=.o}
+TARGET = floodserv.so 
+DOCS = README.FloodServ
+DISTFILES = $(SRCS) $(DOCS) modconfig.h.in configure install-sh ChangeLog Makefile.in floodserv.h RelNotes.txt
 DISTDIR = @PACKAGE@-@VERSION@
 
 all:	 module

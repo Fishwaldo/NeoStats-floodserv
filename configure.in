@@ -4,8 +4,9 @@ AC_CONFIG_HEADER(modconfig.h)
 
 PACKAGE=FloodServ
 MODULE_MAJOR=3
-MODULE_MINOR=0prealpha2
-VERSION=$MODULE_MAJOR.$MODULE_MINOR
+MODULE_MINOR=0
+MODULE_REV=a1-dev
+VERSION=$MODULE_MAJOR.$MODULE_MINOR.$MODULE_REV
 AC_DEFINE_UNQUOTED(MODULE_VERSION, "$VERSION")
 AC_DEFINE_UNQUOTED(MODULE_MAJOR, "$MODULE_MAJOR")
 AC_DEFINE_UNQUOTED(MODULE_MINOR, "$MODULE_MINOR")
@@ -27,31 +28,16 @@ AC_PROG_CC
 AC_PROG_INSTALL 
 
 
-dnl Checks for programs.
-
-AC_HEADER_STDC
-AC_CHECK_HEADERS(limits.h)
-AC_CHECK_HEADERS(crypt.h)
-AC_CHECK_FUNC(crypt,, AC_CHECK_LIB(crypt, crypt,
-[LDFLAGS="$LDFLAGS -lcrypt"],
-))
 dnl Checks for typedefs, structures, and compiler characteristics.
 
 AC_C_CONST
 AC_TYPE_SIZE_T
-
-dnl Checks for library functions.
-
-AC_CHECK_FUNCS(bcopy memmove strerror)
-
-
 
 AC_MSG_CHECKING(Location of NeoStats...)
 AC_ARG_WITH(neostats, 
 [  --with-neostats=DIR	  Location of NeoStats installation],
 [DIRINST=$withval])
 AC_MSG_RESULT($DIRINST)
-
 
 AC_CHECK_FILE($DIRINST/include/neostats.h, 
 [INCLUDEDIR="$DIRINST/include/"], 
@@ -78,7 +64,7 @@ int main(void) {
 if test "$ns_version_ok" = "yes"; then
 	AC_MSG_RESULT(Compatible Version);
 else
-	AC_MSG_ERROR(This Module requires NeoStats 2.5.13 or Higher)
+	AC_MSG_ERROR(This Module requires NeoStats 3.0 or Higher)
 fi
 
 dnl check if we are running with Debug....
@@ -107,22 +93,6 @@ AC_SUBST(VERSION)
 AC_SUBST(HAVE_MEMMOVE)
 AC_SUBST(HAVE_STRERROR)
 AC_OUTPUT(Makefile)
-echo "(*----------------------------------------------------------*)"
-echo "(| Important Instructions                                   |)"
-echo "(*----------------------------------------------------------*)"
-echo "(| Now that configure is complete, type 'make' to compile   |)"
-echo "(| the module. When the compile has completed, type         |)"
-echo "(| 'make install' to install the module.                    |)"
-echo "(| For BSD you might need to use 'gmake' and 'gmake install'|)"
-echo "(*----------------------------------------------------------*)"
-echo "(| For Support please visit:                                |)"
-echo "(|    IRC:                   /server irc.irc-chat.org       |)"
-echo "(|                                   #neostats channel      |)"
-echo "(|    WWW:   http://www.neostats.net/boards/                |)"
-echo "(*----------------------------------------------------------*)"
-echo "(|This Module was written by:                               |)"
-echo "(|	fish (fish@dynam.ac)                                |)"
-echo "(*----------------------------------------------------------*)"
-read -p "Press Enter Key to Read the Release Notes"
-clear
-more RelNotes.txt
+echo "Configuration complete."
+echo "Run 'make' (or 'gmake' on some systems) to compile NeoStats."
+echo "If you require support, see the README file."
