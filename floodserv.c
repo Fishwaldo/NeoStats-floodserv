@@ -21,53 +21,59 @@
 ** $Id$
 */
 
-/* http://sourceforge.net/projects/muhstik/ */
+/*  TODO:
+ *  - Check for per user AJPP in addition to current AJPP checks
+ */
 
 #include "neostats.h"
 #include "floodserv.h"
 
-struct FloodServ {
+struct fscfg {
 	int verbose;
 	int nickthreshold;
 	int nicksampletime;
 	int jointhreshold;
 	int joinsampletime;
-	char chankey[MAXCHANLEN];
-	int closechantime;
-	int floodprot;
-} FloodServ;
+	char chanlockkey[MAXCHANLEN];
+	int chanlocktime;
+	int nickflood;
+	int joinflood;
+} fscfg;
 
-/* the structure to keep track of joins per period (ajpp = average joins per period) */
-typedef struct ChanInfo {
+/* channel flood tracking (ajpp = average joins per period) */
+typedef struct chantrack {
 	Channel *c;
 	int ajpp;
-	time_t joinsampletime;
-	int locked;
-}ChanInfo;
+	time_t ts_lastjoin;
+	time_t locked;
+}chantrack;
 
-/* this is the nickflood stuff */
-typedef struct nicktrack {
+/* nick flood tracking */
+typedef struct usertrack {
+	Client *u;
 	char nick[MAXNICK];
 	int changes;
-	int when;
-}nicktrack;
+	time_t ts_lastchange;
+}usertrack;
 
 /* FloodCheck.c */
-int CheckLockChan(void);
-int CleanNickFlood(void);
-static int fs_event_quit(CmdParams *cmdparams);
-static int fs_event_nick(CmdParams *cmdparams);
-static int fs_event_delchan(CmdParams *cmdparams);
-static int fs_event_joinchan(CmdParams *cmdparams);
-static int fs_cmd_status(CmdParams *cmdparams);
+int CheckLockChan (void);
+
+static int fs_event_signon (CmdParams *cmdparams);
+static int fs_event_quit (CmdParams *cmdparams);
+static int fs_event_nick (CmdParams *cmdparams);
+static int fs_event_newchan (CmdParams *cmdparams);
+static int fs_event_delchan (CmdParams *cmdparams);
+static int fs_event_joinchan (CmdParams *cmdparams);
+static int fs_cmd_status (CmdParams *cmdparams);
 
 Bot *fs_bot;
 
 /* the hash that contains the channels we are tracking */
-static hash_t *FC_Chans;
+static hash_t *joinfloodhash;
 
 /* the hash that contains the nicks we are tracking */
-static hash_t *nickflood;
+static hash_t *nickfloodhash;
 
 static int MaxAJPP = 0;
 static char MaxAJPPChan[MAXCHANLEN];
@@ -103,14 +109,16 @@ ModuleInfo module_info = {
 
 static bot_setting fs_settings[]=
 {
-	{"FLOODPROT",		&FloodServ.floodprot,		SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,"Dofloodprot",	NULL,	fs_help_set_floodprot, NULL, (void *)1 },
-	{"NICKSAMPLETIME",	&FloodServ.nicksampletime,	SET_TYPE_INT,		0,	100,		NS_ULEVEL_ADMIN,"nicksampletime",		NULL,	fs_help_set_nicksampletime, NULL, (void *)5 },
-	{"NICKTHRESHOLD",	&FloodServ.nickthreshold,	SET_TYPE_INT,		0,	100,		NS_ULEVEL_ADMIN,"nickthreshold",		NULL,	fs_help_set_nickthreshold, NULL, (void *)5 },
-	{"JOINSAMPLETIME",	&FloodServ.joinsampletime,	SET_TYPE_INT,		1,	1000,		NS_ULEVEL_ADMIN,"joinsampletime",	"seconds",fs_help_set_joinsampletime, NULL, (void *)5 },
-	{"JOINTHRESHOLD",	&FloodServ.jointhreshold,	SET_TYPE_INT,		1,	1000,		NS_ULEVEL_ADMIN,"jointhreshold",NULL,	fs_help_set_jointhreshold, NULL, (void *)5 },
-	{"CHANKEY",			&FloodServ.chankey,			SET_TYPE_STRING,	0,	MAXCHANLEN,	NS_ULEVEL_ADMIN, "chankey",		NULL,	fs_help_set_chankey, NULL, (void *)"Eeeek" },
-	{"CHANLOCKTIME",	&FloodServ.closechantime,	SET_TYPE_INT,		0,	600,		NS_ULEVEL_ADMIN,"ChanLockTime", NULL,	fs_help_set_chanlocktime, NULL, (void *)30 },
-	{NULL,				NULL,						0,					0,	0, 			0,				NULL,			NULL,	NULL, NULL },
+	{"VERBOSE",			&fscfg.verbose,			SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,"ChanLockTime",		NULL,		fs_help_set_chanlocktime, NULL, (void *)1 },
+	{"NICKFLOOD",		&fscfg.nickflood,		SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,"nickfloodhash",	NULL,		fs_help_set_nickflood, NULL, (void *)1 },
+	{"NICKSAMPLETIME",	&fscfg.nicksampletime,	SET_TYPE_INT,		0,	100,		NS_ULEVEL_ADMIN,"nicksampletime",	NULL,		fs_help_set_nicksampletime, NULL, (void *)5 },
+	{"NICKTHRESHOLD",	&fscfg.nickthreshold,	SET_TYPE_INT,		0,	100,		NS_ULEVEL_ADMIN,"nickthreshold",	NULL,		fs_help_set_nickthreshold, NULL, (void *)5 },
+	{"JOINFLOOD",		&fscfg.joinflood,		SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,"joinflood",		NULL,		fs_help_set_joinflood, NULL, (void *)1 },
+	{"JOINSAMPLETIME",	&fscfg.joinsampletime,	SET_TYPE_INT,		1,	1000,		NS_ULEVEL_ADMIN,"joinsampletime",	"seconds",	fs_help_set_joinsampletime, NULL, (void *)5 },
+	{"JOINTHRESHOLD",	&fscfg.jointhreshold,	SET_TYPE_INT,		1,	1000,		NS_ULEVEL_ADMIN,"jointhreshold",	NULL,		fs_help_set_jointhreshold, NULL, (void *)5 },
+	{"CHANLOCKKEY",		&fscfg.chanlockkey,		SET_TYPE_STRING,	0,	MAXCHANLEN,	NS_ULEVEL_ADMIN, "chanlockkey",		NULL,		fs_help_set_chanlockkey, NULL, (void *)"Eeeek" },
+	{"CHANLOCKTIME",	&fscfg.chanlocktime,	SET_TYPE_INT,		0,	600,		NS_ULEVEL_ADMIN,"ChanLockTime",		NULL,		fs_help_set_chanlocktime, NULL, (void *)30 },
+	{NULL,				NULL,					0,					0,	0, 			0,				NULL,				NULL,		NULL, NULL },
 };
 
 static bot_cmd fs_commands[]=
@@ -119,7 +127,7 @@ static bot_cmd fs_commands[]=
 	{NULL,		NULL,			0, 	0,				NULL, 				NULL}
 };
 
-BotInfo ss_botinfo =
+BotInfo fs_botinfo =
 {
 	"FloodServ",
 	"FloodServ1",
@@ -133,9 +141,11 @@ BotInfo ss_botinfo =
 
 ModuleEvent module_events[] = {
 	{ EVENT_NICK,		fs_event_nick},
+	{ EVENT_SIGNON, 	fs_event_signon},
 	{ EVENT_QUIT, 		fs_event_quit},
 	{ EVENT_KILL, 		fs_event_quit},
 	{ EVENT_JOIN, 		fs_event_joinchan},
+	{ EVENT_NEWCHAN,	fs_event_newchan},
 	{ EVENT_DELCHAN,	fs_event_delchan},
 	{ EVENT_NULL, 		NULL}
 };
@@ -143,116 +153,100 @@ ModuleEvent module_events[] = {
 static int fs_cmd_status(CmdParams *cmdparams)
 {
 	SET_SEGV_LOCATION();
-	irc_prefmsg (fs_bot, cmdparams->source, "Current Top AJPP: %d (in %d Seconds): %s", MaxAJPP, FloodServ.joinsampletime, MaxAJPPChan);
+	irc_prefmsg (fs_bot, cmdparams->source, "Current Top AJPP: %d (in %d Seconds): %s",
+		MaxAJPP, fscfg.joinsampletime, MaxAJPPChan);
 	return NS_SUCCESS;
 }
 
-static int fs_event_joinchan(CmdParams *cmdparams)
+static int fs_event_joinchan (CmdParams *cmdparams)
 {
-	ChanInfo *ci;
-	hnode_t *cn;
+	chantrack *ci;
 
 	SET_SEGV_LOCATION();
-	
+	/* if channel flood protection is disabled, return here */
+	if (fscfg.joinflood == 0) {
+		return NS_SUCCESS;
+	}
 	if (cmdparams->source->flags && NS_FLAGS_NETJOIN) {
 		return NS_SUCCESS;
 	}
-	/* if channel flood protection is disabled, return here */
-	if (FloodServ.floodprot == 0) {
-		return NS_SUCCESS;
-	}
-
-	/* find the chan in FloodServ's list */
-	cn = hash_lookup(FC_Chans, cmdparams->channel->name);
-	if (!cn) {
-
-		/* if it doesn't exist, means we have to create it ! */
-		dlog (DEBUG2, "Creating Channel Record in JoinSection %s", cmdparams->channel->name);
-		ci = ns_malloc (sizeof(ChanInfo));
-		ci->ajpp = 0;
-		ci->joinsampletime = 0;
-		ci->c = cmdparams->channel;
-		ci->locked = 0;
-		cn = hnode_create(ci);
-		hash_insert(FC_Chans, cn, cmdparams->channel->name);
-	} else {		
-		ci = hnode_get(cn);
-	}
-		
-	/* Firstly, if the last join was "SampleTime" seconds ago
-	 * then reset the time, and set ajpp to 1
+	ci = GetChannelModValue (cmdparams->channel);	
+	/* if the last join was "SampleTime" seconds ago
+	 * reset the time and set ajpp to 1
 	 */
-	if ((time(NULL) - ci->joinsampletime) > FloodServ.joinsampletime) {
+	if ((time(NULL) - ci->ts_lastjoin) > fscfg.joinsampletime) {
 		dlog (DEBUG2, "ChanJoin: SampleTime Expired, Resetting %s", cmdparams->channel->name);
-		ci->joinsampletime = time(NULL);
+		ci->ts_lastjoin = time(NULL);
 		ci->ajpp = 1;
 		return NS_SUCCESS;
-	}
-		
-	/* now check if ajpp has exceeded the threshold */
-	
-	/* XXX TOTHINK should we have different thresholds for different channel 
-	 * sizes? Needs some real life testing I guess 
-	 */		
-	ci->ajpp++;	
-
-	if ((ci->ajpp > FloodServ.jointhreshold) && (ci->locked > 0)) {
-		nlog (LOG_WARNING, "Warning, Possible Flood on %s. Closing Channel. (AJPP: %d/%d Sec, SampleTime %d", ci->c->name, ci->ajpp, (int)(time(NULL) - ci->joinsampletime), FloodServ.joinsampletime);
-		irc_chanalert (fs_bot, "Warning, Possible Flood on %s. Closing Channel. (AJPP: %d/%d Sec, SampleTime %d)", ci->c->name, ci->ajpp, (int)(time(NULL) - ci->joinsampletime), FloodServ.joinsampletime);			
-		irc_globops (fs_bot, "Warning, Possible Flood on %s. Closing Channel. (AJPP: %d/%d Sec, SampleTime %d)", ci->c->name, ci->ajpp, (int)(time(NULL) - ci->joinsampletime), FloodServ.joinsampletime);			
-		irc_chanprivmsg (fs_bot, ci->c->name, "Temporarily closing channel due to possible floodbot attack. Channel will be re-opened in %d seconds", FloodServ.closechantime);
-		/* uh oh, channel is under attack. Close it down. */
-		irc_cmode (fs_bot, ci->c->name, "+ik", FloodServ.chankey);
-		ci->locked = time(NULL);
 	}		
-
+	/* check if ajpp has exceeded the threshold */	
+	/* should we have different thresholds for different channel sizes? */		
+	ci->ajpp++;	
+	if ((ci->ajpp > fscfg.jointhreshold) && (ci->locked > 0)) {
+		nlog (LOG_WARNING, "Warning, possible flood on %s. Closing channel. (AJPP: %d/%d Sec, SampleTime %d", ci->c->name, ci->ajpp, (int)(time(NULL) - ci->ts_lastjoin), fscfg.joinsampletime);
+		irc_chanalert (fs_bot, "Warning, possible flood on %s. Closing channel. (AJPP: %d/%d Sec, SampleTime %d)", ci->c->name, ci->ajpp, (int)(time(NULL) - ci->ts_lastjoin), fscfg.joinsampletime);			
+		irc_globops (fs_bot, "Warning, possible flood on %s. Closing channel. (AJPP: %d/%d Sec, SampleTime %d)", ci->c->name, ci->ajpp, (int)(time(NULL) - ci->ts_lastjoin), fscfg.joinsampletime);			
+		irc_chanprivmsg (fs_bot, ci->c->name, "Temporarily closing channel due to possible floodbot attack. Channel will be re-opened in %d seconds", fscfg.chanlocktime);
+		/* close flood channel */
+		irc_cmode (fs_bot, ci->c->name, "+ik", fscfg.chanlockkey);
+		ci->locked = time(NULL);
+	}
 	/* just some record keeping */
 	if (ci->ajpp > MaxAJPP) {
-		dlog (DEBUG1, "New AJPP record on %s at %d Joins in %d Seconds", cmdparams->channel->name, ci->ajpp, (int)(time(NULL) - ci->joinsampletime));
-		if (FloodServ.verbose) irc_chanalert (fs_bot, "New AJPP record on %s at %d Joins in %d Seconds", cmdparams->channel->name, ci->ajpp, (int)(time(NULL) - ci->joinsampletime));
+		dlog (DEBUG1, "New AJPP record on %s at %d Joins in %d Seconds", cmdparams->channel->name, ci->ajpp, (int)(time(NULL) - ci->ts_lastjoin));
+		if (fscfg.verbose) {
+			irc_chanalert (fs_bot, "New AJPP record on %s at %d Joins in %d Seconds", cmdparams->channel->name, ci->ajpp, (int)(time(NULL) - ci->ts_lastjoin));
+		}
 		MaxAJPP = ci->ajpp;
-		strlcpy(MaxAJPPChan, cmdparams->channel->name, MAXCHANLEN);
+		strlcpy (MaxAJPPChan, cmdparams->channel->name, MAXCHANLEN);
 	}
+	return NS_SUCCESS;
+}
+
+static int fs_event_newchan (CmdParams *cmdparams)
+{
+	chantrack *ci;
+
+	dlog (DEBUG2, "Creating channel record for %s", cmdparams->channel->name);
+	ci = (chantrack *) AllocChannelModPtr (cmdparams->channel, sizeof(chantrack));
+	ci->c = cmdparams->channel;
+	hnode_create_insert (joinfloodhash, ci, cmdparams->channel->name);	
 	return NS_SUCCESS;
 }
 
 /* delete the channel from our hash */
 static int fs_event_delchan(CmdParams *cmdparams)
 {
-	ChanInfo *ci;
+	chantrack *ci;
 	hnode_t *cn;
 
 	SET_SEGV_LOCATION();
-	cn = hash_lookup(FC_Chans, cmdparams->channel->name);
+	cn = hash_lookup (joinfloodhash, cmdparams->channel->name);
 	if (cn) {
-		ci = hnode_get(cn);
-		hash_delete(FC_Chans, cn);
-		ns_free (ci);
-		hnode_destroy(cn);
-#if 0		
-	} else {
-		/* ignore this, as it just means since we started FloodServ, no one has joined the channel, and now the last person has left. Was just flooding logfiles */
-		//nlog (LOG_WARNING, "Can't Find Channel %s in our Hash", cmdparams->channel->name);
-#endif
+		ci = hnode_get (cn);
+		hash_delete (joinfloodhash, cn);
+		FreeChannelModPtr (ci->c);
+		hnode_destroy (cn);
 	}
 	return NS_SUCCESS;
 }
 
-int CheckLockChan() 
+int CheckLockChan (void) 
 {
 	hscan_t cs;
 	hnode_t *cn;
-	ChanInfo *ci;
+	chantrack *ci;
 	
 	SET_SEGV_LOCATION();
 	/* scan through the channels */
-	hash_scan_begin(&cs, FC_Chans);
+	hash_scan_begin (&cs, joinfloodhash);
 	while ((cn = hash_scan_next (&cs)) != NULL) {
-		ci = hnode_get(cn);
-		/* if the locked time plus closechantime is greater than current time, then unlock the channel */
-		if ((ci->locked > 0) && (ci->locked + FloodServ.closechantime < time(NULL))) {
-			irc_cmode (fs_bot, ci->c->name, "-ik", FloodServ.chankey);
-			irc_chanalert (fs_bot, "Unlocking %s after floodprotection timeout", ci->c->name);
+		ci = hnode_get (cn);
+		/* if the locked time plus chanlocktime is greater than current time, then unlock the channel */
+		if ((ci->locked > 0) && (ci->locked + fscfg.chanlocktime < time(NULL))) {
+			irc_cmode (fs_bot, ci->c->name, "-ik", fscfg.chanlockkey);
+			irc_chanalert (fs_bot, "Unlocking %s after flood protection timeout", ci->c->name);
 			irc_globops (fs_bot, "Unlocking %s after flood protection timeout", ci->c->name);
 			irc_chanprivmsg (fs_bot, ci->c->name, "Unlocking the channel now");
 			ci->locked = 0;
@@ -261,95 +255,65 @@ int CheckLockChan()
 	return 1;
 }
 
-/* periodically clean up the nickflood hash so it doesn't grow to big */
-int CleanNickFlood() 
-{
-	hscan_t nfscan;
-	hnode_t *nfnode;
-	nicktrack *nick;
-
-	SET_SEGV_LOCATION();
-    hash_scan_begin(&nfscan, nickflood);
-    while ((nfnode = hash_scan_next(&nfscan)) != NULL) {
-        nick = hnode_get(nfnode);
-        if ((time(NULL) - nick->when) > FloodServ.nicksampletime) {
-        	/* delete the nickname */
-		dlog (DEBUG2, "Deleting %s out of NickFlood Hash", nick->nick);
-        	hash_scan_delete(nickflood, nfnode);
-        	ns_free (nick);
-        }
-    }
-	return 1;
-}       
-	                
 /* scan nickname changes */
 static int fs_event_nick(CmdParams *cmdparams) 
 {
 	hnode_t *nfnode;
-	nicktrack *nick;
+	usertrack *flooduser;
 
 	SET_SEGV_LOCATION();
-	nfnode = hash_lookup(nickflood, cmdparams->source->name);
+	nfnode = hash_lookup (nickfloodhash, cmdparams->source->name);
 	if (nfnode) {
-		/* its already there */
-		nick = hnode_get(nfnode);
-		/* first, remove it from the hash, as the nick has changed */
-		hash_delete(nickflood, nfnode);
+		flooduser = hnode_get (nfnode);
+		/* remove it from the hash, as the nick has changed */
+		hash_delete (nickfloodhash, nfnode);
 		/* increment the nflood count */
-		nick->changes++;
-		dlog (DEBUG2, "NickFlood Check: %d in %s", nick->changes, FloodServ.nicksampletime);
-		if ((nick->changes > FloodServ.nickthreshold) && ((time(NULL) - nick->when) <= FloodServ.nicksampletime)) {
-			/* its a bad bad bad flood */
-			irc_chanalert (fs_bot, "NickFlood Detected on %s", cmdparams->source->name);
-			/* XXX Do Something bad !!!! */
-			
-			/* ns_free the struct */
-			hnode_destroy(nfnode);
-			ns_free (nick);
-		} else if ((time(NULL) - nick->when) > FloodServ.nicksampletime) {
-			dlog (DEBUG2, "Resetting NickFlood Count on %s", cmdparams->source->name);
-			strlcpy(nick->nick, cmdparams->source->name, MAXNICK);
-			nick->changes = 1;
-			nick->when = time(NULL);
-			hash_insert(nickflood, nfnode, nick->nick);
-		} else {			
-			/* re-insert it into the hash */
-			strlcpy(nick->nick, cmdparams->source->name, MAXNICK);
-			hash_insert(nickflood, nfnode, nick->nick);
-		}
-	} else {
-		/* this is because maybe we already have a record from a signoff etc */
-		if (!hash_lookup(nickflood, cmdparams->source->name)) {
-			/* this is a first */
-			nick = ns_malloc (sizeof(nicktrack));
-			strlcpy(nick->nick, cmdparams->source->name, MAXNICK);
-			nick->changes = 1;
-			nick->when = time(NULL);
-			nfnode = hnode_create(nick);
-			hash_insert(nickflood, nfnode, nick->nick);
-			dlog (DEBUG2, "NF: Created New Entry");
-		} else {
-			dlog (DEBUG2, "Already got a record for %s in NickFlood", cmdparams->source->name);
-		}
+		flooduser->changes++;
+		dlog (DEBUG2, "NickFlood check: %d in %s", flooduser->changes, fscfg.nicksampletime);
+		if ((flooduser->changes > fscfg.nickthreshold) && ((time(NULL) - flooduser->ts_lastchange) <= fscfg.nicksampletime)) {
+			/* nick change flood */
+			irc_chanalert (fs_bot, "NickFlood detected on %s", cmdparams->source->name);
+			/* TODO: React to nick flood */	
+		} else if ((time(NULL) - flooduser->ts_lastchange) > fscfg.nicksampletime) {
+			dlog (DEBUG2, "Resetting nickflood count on %s", cmdparams->source->name);
+			flooduser->changes = 1;
+			flooduser->ts_lastchange = time(NULL);
+		} 
+		/* re-insert it into the hash */
+		strlcpy (flooduser->nick, cmdparams->source->name, MAXNICK);
+		hash_insert (nickfloodhash, nfnode, flooduser->nick);
 	}
+	return NS_SUCCESS;
+}
+
+static int fs_event_signon (CmdParams *cmdparams)
+{
+	usertrack *flooduser;
+
+	flooduser = (usertrack *) AllocUserModPtr (cmdparams->source, sizeof(usertrack));
+	strlcpy (flooduser->nick, cmdparams->source->name, MAXNICK);
+	flooduser->changes = 1;
+	flooduser->ts_lastchange = time(NULL);
+	flooduser->u = cmdparams->source;
+	hnode_create_insert (nickfloodhash, flooduser, flooduser->nick);
+	dlog (DEBUG2, "Created new nickflood entry");
 	return NS_SUCCESS;
 }
 
 static int fs_event_quit(CmdParams *cmdparams) 
 {
 	hnode_t *nfnode;
-	nicktrack *nick;
+	usertrack *flooduser;
 
 	SET_SEGV_LOCATION();
 	dlog (DEBUG2, "fs_event_quit: looking for %s", cmdparams->source->name);
-	nfnode = hash_lookup(nickflood, cmdparams->source->name);
+	nfnode = hash_lookup (nickfloodhash, cmdparams->source->name);
 	if (nfnode) {
-		nick = hnode_get(nfnode);
-		hash_delete(nickflood, nfnode);
-       		hnode_destroy(nfnode);
-		ns_free (nick);
+		flooduser = hnode_get (nfnode);
+		hash_delete (nickfloodhash, nfnode);
+		FreeUserModPtr (flooduser->u);
+       	hnode_destroy (nfnode);
 	}
-	dlog (DEBUG2, "fs_event_quit: After nickflood Code");
 	return NS_SUCCESS;
 }
 
@@ -358,12 +322,12 @@ static int fs_event_quit(CmdParams *cmdparams)
 int ModInit (Module *mod_ptr)
 {
 	SET_SEGV_LOCATION();
-	os_memset (&FloodServ, 0, sizeof (FloodServ));
+	os_memset (&fscfg, 0, sizeof (fscfg));
 	ModuleConfig (fs_settings);
 	/* init the channel hash */	
-	FC_Chans = hash_create(-1, 0, 0);
-	/* init the nickflood hash */
-	nickflood = hash_create(-1, 0, 0);
+	joinfloodhash = hash_create (-1, 0, 0);
+	/* init the nickfloodhash hash */
+	nickfloodhash = hash_create (-1, 0, 0);
 	return NS_SUCCESS;
 }
 
@@ -379,13 +343,10 @@ int ModInit (Module *mod_ptr)
 int ModSynch (void)
 {
 	SET_SEGV_LOCATION();
-	fs_bot = AddBot (&ss_botinfo);
+	fs_bot = AddBot (&fs_botinfo);
 	if (!fs_bot) {
 		return NS_FAILURE;
 	}
-	/* start cleaning the nickflood list now */
-	/* every sixty seconds should keep the list small, and not put *too* much load on NeoStats */
-	add_timer (TIMER_TYPE_INTERVAL, CleanNickFlood, "CleanNickFlood", 60);
 	add_timer (TIMER_TYPE_INTERVAL, CheckLockChan, "CheckLockChan", 60);
 	return NS_SUCCESS;
 };
@@ -395,5 +356,28 @@ int ModSynch (void)
  */
 void ModFini() 
 {
+	hscan_t scan;
+	hnode_t *node;
+	chantrack *ci;
+	usertrack *flooduser;
+	
 	SET_SEGV_LOCATION();
+	/* scan through the channels */
+	hash_scan_begin (&scan, joinfloodhash);
+	while ((node = hash_scan_next (&scan)) != NULL) {
+		ci = hnode_get (node);
+		hash_scan_delete (joinfloodhash, node);
+		FreeChannelModPtr (ci->c);
+		hnode_destroy (node);
+	}
+	hash_destroy (joinfloodhash);
+	/* scan through the nicks */
+	hash_scan_begin (&scan, nickfloodhash);
+	while ((node = hash_scan_next (&scan)) != NULL) {
+		flooduser = hnode_get (node);
+		hash_scan_delete (nickfloodhash, node);
+		FreeUserModPtr (flooduser->u);
+       	hnode_destroy (node);
+	}
+	hash_destroy (nickfloodhash);
 }

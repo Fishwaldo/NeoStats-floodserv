@@ -26,12 +26,12 @@
 
 extern const char fs_help_status_oneline[];
 extern const char *fs_help_status[];
-extern const char *fs_help_set_chankey[];
-extern const char *fs_help_set_floodprot[];
+extern const char *fs_help_set_chanlockkey[];
+extern const char *fs_help_set_nickflood[];
+extern const char *fs_help_set_joinflood[];
 extern const char *fs_help_set_chanlocktime[];
 extern const char *fs_help_set_nickthreshold[];
 extern const char *fs_help_set_nicksampletime[];
-extern const char *fs_help_set_dojoin[];
 extern const char *fs_help_set_verbose[];
 extern const char *fs_help_set_joinsampletime[];
 extern const char *fs_help_set_jointhreshold[];

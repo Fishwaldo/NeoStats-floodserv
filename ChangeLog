@@ -1,4 +1,9 @@
 FloodServ Module for NeoStats Changelog.
 ==============================================================================
 3.0 - Mark (M)
+ - Associate flood structures with channel/user so we get faster lookups on a
+   given event. (M).
+ - Allocate user structures at signon and delete on quit, and allocate channel 
+   structures on newchan and delete on delchan. This reduces the need for 
+   timers to clean lists.
  - Initial version to replace SecureServ flood checks. (M).

@@ -31,54 +31,48 @@ const char *fs_help_status[] = {
 	NULL
 };
 
-
-const char *fs_help_set[] = {
-	"Syntax: \2SET <OPTION> <SETTING>\2",
-	"",
-	"    \2AKILL <on/off>\2         - Tells SecureServ to never issue an Akill on your Network. A warning message is sent to the operators instead",
-	"    \2AKILLTIME <seconds>\2	- Sets the time an AKILL will last for.",
-	"    \2DOJOIN <on/off>\2        - Tells SecureServ to never issue a SVSJOIN when a virus is detected. The User is Akilled instead",
-	"    \2DOPRIVCHAN <on/off>\2	- Tells SecureServ not to join Private Channels",
-	"    \2FLOODPROT <on/off>\2     - Enable Channel Flood Protection Scanning.",
-	"    \2CHANKEY <key>\2          - When Flood Protection for a Channel is active, this is the key we will use to lock the channel",
-	"    \2CHANLOCKTIME <seconds>\2 - How long (Approx) do we lock a Channel for. Time in seconds",
-	"    \2VERBOSE <on/off>\2       - Turn on Verbose Mode. Prepare to be flooded!",
-	"    \2SAMPLETIME <seconds> <joins>\2",
-	"                               - Sets the threshold for Flood Checking. Read the Readme File for more information",
-	"    \2NFCOUNT <number>\2       - Sets the threshold for Nick Floods. <number> is number of changes in 10 seconds.",
-	NULL
-};
-
-const char *fs_help_set_chankey[] = {
-	"\2CHANKEY <key>\2 - Sets the key to use for locking the channel when flood protection is active",
-	NULL
-};
-const char *fs_help_set_floodprot[] = {
-	"\2FLOODPROT <on/off>\2 - Enable channel flood protection.",
-	NULL
-};
-const char *fs_help_set_chanlocktime[] = {
-	"\2CHANLOCKTIME <seconds>\2 - Set the time to lock a channel for when flood protection is enabled. Time in seconds",
-	NULL
-};
-const char *fs_help_set_nickthreshold[] = {
-	"\2NICKTHRESHOLD <number>\2 - Sets the threshold for Nick Floods. <number> is number of changes in 10 seconds.",
-	NULL
-};
-const char *fs_help_set_nicksampletime[] = {
-	"\2NICKSAMPLETIME <number>\2 - Sets the threshold for Nick Floods. <number> is number of changes in 10 seconds.",
-	NULL
-};
 const char *fs_help_set_verbose[] = {
 	"\2VERBOSE <on/off>\2 - Enable verbose mode. Prepare to be flooded!",
 	NULL
 };
+
+const char *fs_help_set_nickflood[] = {
+	"\2NICKFLOOD <on/off>\2 - Enable nick flood protection.",
+	NULL
+};
+
+const char *fs_help_set_nickthreshold[] = {
+	"\2NICKTHRESHOLD <number>\2 - Sets the threshold for Nick Floods. <number> is number of changes in 10 seconds.",
+	NULL
+};
+
+const char *fs_help_set_nicksampletime[] = {
+	"\2NICKSAMPLETIME <number>\2 - Sets the threshold for Nick Floods. <number> is number of changes in 10 seconds.",
+	NULL
+};
+
+const char *fs_help_set_joinflood[] = {
+	"\2JOINFLOOD <on/off>\2 - Enable channel flood protection.",
+	NULL
+};
+
 const char *fs_help_set_joinsampletime[] = {
 	"\2JOINSAMPLETIME <seconds> <joins>\2",
 	"Sets the threshold for flood checking. Read the Readme file for more information",
 	NULL
 };
+
 const char *fs_help_set_jointhreshold[] = {
-	"\2NICKTHRESHOLD <number>\2 - Sets the threshold for Nick Floods. <number> is number of changes in 10 seconds.",
+	"\2JOINTHRESHOLD <number>\2 - Sets the threshold for Nick Floods. <number> is number of changes in 10 seconds.",
+	NULL
+};
+
+const char *fs_help_set_chanlockkey[] = {
+	"\2CHANLOCKKEY <key>\2 - Sets the key to use for locking the channel when flood protection is active",
+	NULL
+};
+
+const char *fs_help_set_chanlocktime[] = {
+	"\2CHANLOCKTIME <seconds>\2 - Set the time to lock a channel for when flood protection is enabled. Time in seconds",
 	NULL
 };
