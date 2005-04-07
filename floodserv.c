@@ -182,7 +182,7 @@ ModuleEvent module_events[] =
 	{ EVENT_JOIN, 		fs_event_joinchan},
 	{ EVENT_NEWCHAN,	fs_event_newchan,	EVENT_FLAG_IGNORE_SYNCH},
 	{ EVENT_DELCHAN,	fs_event_delchan},
-	{ EVENT_TOPIC,		fs_event_topicchange,	EVENT_FLAG_IGNORE_SYNCH},
+	{ EVENT_TOPIC,		fs_event_topicchange},
 	{ EVENT_NULL, 		NULL}
 };
 
