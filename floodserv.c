@@ -37,6 +37,10 @@
 struct fscfg 
 {
 	int verbose;
+	int topicflood;
+	int topicfloodact;
+	int topicthreshold;
+	int topicsampletime;
 	int nickflood;
 	int nickfloodact;
 	int nickthreshold;
@@ -49,13 +53,19 @@ struct fscfg
 	char chanlockkey[KEYLEN];
 } fscfg;
 
-/* channel flood tracking( ajpp = average joins per period ) */
+/* channel flood tracking
+ * ( ajpp = average joins per period )
+ * ( ctc = channel topic changes )
+ */
 typedef struct chantrack 
 {
 	Channel *c;
 	int ajpp;
 	time_t ts_lastjoin;
 	time_t locked;
+	int ctc;
+	time_t ts_lasttopic;
+	time_t topic_locked;
 }chantrack;
 
 /* nick flood tracking */
@@ -74,6 +84,7 @@ static int fs_event_nick( CmdParams *cmdparams );
 static int fs_event_newchan( CmdParams *cmdparams );
 static int fs_event_delchan( CmdParams *cmdparams );
 static int fs_event_joinchan( CmdParams *cmdparams );
+static int fs_event_topicchange( CmdParams *cmdparams );
 static int fs_cmd_status( CmdParams *cmdparams );
 
 /* Bot pointer */
@@ -88,6 +99,10 @@ static hash_t *nickfloodhash;
 /* Max AJPP reporting variables */
 static int MaxAJPP = 0;
 static char MaxAJPPChan[MAXCHANLEN];
+
+/* Max CTC reporting variables */
+static int MaxCTC = 0;
+static char MaxCTCChan[MAXCHANLEN];
 
 /** about info */
 const char *fs_about[] = 
@@ -122,18 +137,22 @@ ModuleInfo module_info =
 
 static bot_setting fs_settings[]=
 {
-	{"VERBOSE",			&fscfg.verbose,			SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,NULL,		fs_help_set_verbose, NULL,( void * )1 },
-	{"NICKFLOOD",		&fscfg.nickflood,		SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,NULL,		fs_help_set_nickflood, NULL,( void * )1 },
-	{"NICKFLOODACT",	&fscfg.nickfloodact,	SET_TYPE_INT,		0,	0,			NS_ULEVEL_ADMIN,NULL,		fs_help_set_nickfloodact, NULL,( void * )0 },
-	{"NICKSAMPLETIME",	&fscfg.nicksampletime,	SET_TYPE_INT,		0,	100,		NS_ULEVEL_ADMIN,"seconds",	fs_help_set_nicksampletime, NULL,( void * )5 },
-	{"NICKTHRESHOLD",	&fscfg.nickthreshold,	SET_TYPE_INT,		0,	100,		NS_ULEVEL_ADMIN,NULL,		fs_help_set_nickthreshold, NULL,( void * )5 },
-	{"JOINFLOOD",		&fscfg.joinflood,		SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,NULL,		fs_help_set_joinflood, NULL,( void * )1 },
-	{"JOINFLOODACT",	&fscfg.joinfloodact,	SET_TYPE_INT,		0,	1,			NS_ULEVEL_ADMIN,NULL,		fs_help_set_joinfloodact, NULL,( void * )0 },
-	{"JOINSAMPLETIME",	&fscfg.joinsampletime,	SET_TYPE_INT,		1,	1000,		NS_ULEVEL_ADMIN,"seconds",	fs_help_set_joinsampletime, NULL,( void * )5 },
-	{"JOINTHRESHOLD",	&fscfg.jointhreshold,	SET_TYPE_INT,		1,	1000,		NS_ULEVEL_ADMIN,NULL,		fs_help_set_jointhreshold, NULL,( void * )5 },
-	{"CHANLOCKKEY",		&fscfg.chanlockkey,		SET_TYPE_STRING,	0,	KEYLEN,		NS_ULEVEL_ADMIN,NULL,		fs_help_set_chanlockkey, NULL,( void * )"random" },
-	{"CHANLOCKTIME",	&fscfg.chanlocktime,	SET_TYPE_INT,		0,	600,		NS_ULEVEL_ADMIN,NULL,		fs_help_set_chanlocktime, NULL,( void * )30 },
-	{NULL,				NULL,					0,					0,	0, 			0,				NULL,		NULL, NULL },
+	{"VERBOSE",		&fscfg.verbose,		SET_TYPE_BOOLEAN,	0,	0,	NS_ULEVEL_ADMIN,NULL,		fs_help_set_verbose,		NULL,	( void * )1 },
+	{"TOPICFLOOD",		&fscfg.topicflood,	SET_TYPE_BOOLEAN,	0,	0,	NS_ULEVEL_ADMIN,NULL,		fs_help_set_topicflood,		NULL,	( void * )1 },
+	{"TOPICFLOODACT",	&fscfg.topicfloodact,	SET_TYPE_INT,		0,	1,	NS_ULEVEL_ADMIN,NULL,		fs_help_set_topicfloodact,	NULL,	( void * )0 },
+	{"TOPICSAMPLETIME",	&fscfg.topicsampletime,	SET_TYPE_INT,		0,	100,	NS_ULEVEL_ADMIN,"seconds",	fs_help_set_topicsampletime,	NULL,	( void * )5 },
+	{"TOPICTHRESHOLD",	&fscfg.topicthreshold,	SET_TYPE_INT,		0,	100,	NS_ULEVEL_ADMIN,NULL,		fs_help_set_topicthreshold,	NULL,	( void * )5 },
+	{"NICKFLOOD",		&fscfg.nickflood,	SET_TYPE_BOOLEAN,	0,	0,	NS_ULEVEL_ADMIN,NULL,		fs_help_set_nickflood,		NULL,	( void * )1 },
+	{"NICKFLOODACT",	&fscfg.nickfloodact,	SET_TYPE_INT,		0,	0,	NS_ULEVEL_ADMIN,NULL,		fs_help_set_nickfloodact,	NULL,	( void * )0 },
+	{"NICKSAMPLETIME",	&fscfg.nicksampletime,	SET_TYPE_INT,		0,	100,	NS_ULEVEL_ADMIN,"seconds",	fs_help_set_nicksampletime,	NULL,	( void * )5 },
+	{"NICKTHRESHOLD",	&fscfg.nickthreshold,	SET_TYPE_INT,		0,	100,	NS_ULEVEL_ADMIN,NULL,		fs_help_set_nickthreshold,	NULL,	( void * )5 },
+	{"JOINFLOOD",		&fscfg.joinflood,	SET_TYPE_BOOLEAN,	0,	0,	NS_ULEVEL_ADMIN,NULL,		fs_help_set_joinflood,		NULL,	( void * )1 },
+	{"JOINFLOODACT",	&fscfg.joinfloodact,	SET_TYPE_INT,		0,	1,	NS_ULEVEL_ADMIN,NULL,		fs_help_set_joinfloodact,	NULL,	( void * )0 },
+	{"JOINSAMPLETIME",	&fscfg.joinsampletime,	SET_TYPE_INT,		1,	1000,	NS_ULEVEL_ADMIN,"seconds",	fs_help_set_joinsampletime,	NULL,	( void * )5 },
+	{"JOINTHRESHOLD",	&fscfg.jointhreshold,	SET_TYPE_INT,		1,	1000,	NS_ULEVEL_ADMIN,NULL,		fs_help_set_jointhreshold,	NULL,	( void * )5 },
+	{"CHANLOCKKEY",		&fscfg.chanlockkey,	SET_TYPE_STRING,	0,	KEYLEN,	NS_ULEVEL_ADMIN,NULL,		fs_help_set_chanlockkey,	NULL,	( void * )"random" },
+	{"CHANLOCKTIME",	&fscfg.chanlocktime,	SET_TYPE_INT,		0,	600,	NS_ULEVEL_ADMIN,NULL,		fs_help_set_chanlocktime,	NULL,	( void * )30 },
+	{NULL,			NULL,			NULL,			NULL,	NULL, 	NULL,				NULL,				NULL, 	NULL },
 };
 
 static bot_cmd fs_commands[]=
@@ -163,6 +182,7 @@ ModuleEvent module_events[] =
 	{ EVENT_JOIN, 		fs_event_joinchan},
 	{ EVENT_NEWCHAN,	fs_event_newchan,	EVENT_FLAG_IGNORE_SYNCH},
 	{ EVENT_DELCHAN,	fs_event_delchan},
+	{ EVENT_TOPIC,		fs_event_topicchange,	EVENT_FLAG_IGNORE_SYNCH},
 	{ EVENT_NULL, 		NULL}
 };
 
@@ -180,6 +200,8 @@ static int fs_cmd_status( CmdParams *cmdparams )
 	SET_SEGV_LOCATION();
 	irc_prefmsg( fs_bot, cmdparams->source, "Current top AJPP %d (in %d seconds) in channel %s",
 		MaxAJPP, fscfg.joinsampletime, MaxAJPPChan );
+	irc_prefmsg( fs_bot, cmdparams->source, "Current top CTC %d (in %d seconds) in channel %s",
+		MaxCTC, fscfg.topicsampletime, MaxCTCChan );
 	return NS_SUCCESS;
 }
 
@@ -294,6 +316,91 @@ static int fs_event_joinchan( CmdParams *cmdparams )
 	return NS_SUCCESS;
 }
 
+/** @brief fs_event_topicchange
+ *  
+ *  TOPIC event processing
+ *  
+ *  @param cmdparams
+ *  
+ *  @return NS_SUCCESS if succeeds, NS_FAILURE if not 
+ */
+
+static int fs_event_topicchange( CmdParams *cmdparams )
+{
+	chantrack *ci;
+	time_t period;
+
+	SET_SEGV_LOCATION();
+	/* if topic flood protection is disabled, return here */
+	if( fscfg.topicflood == 0 ) 
+	{
+		return NS_SUCCESS;
+	}
+	/* if topic already locked, nothing we can do, return */
+	if (CheckChanMode(cmdparams->channel, CMODE_TOPICLIMIT))
+	{
+		return NS_SUCCESS;
+	}
+	if( IsNetSplit( cmdparams->source ) ) 
+	{
+		dlog( DEBUG1, "Ignoring netsplit nick %s", cmdparams->source->name );
+		return NS_SUCCESS;
+	}
+	ci = ( chantrack * ) GetChannelModPtr( cmdparams->channel );
+	if( !ci )
+	{
+		ci = fs_new_channel( cmdparams->channel );
+	}
+	/* if the last topic was "SampleTime" seconds ago reset the time and ctc */
+	period = me.now - ci->ts_lasttopic;
+	if( period > fscfg.topicsampletime ) 
+	{
+		dlog( DEBUG2, "TopicChange: SampleTime expired, resetting %s", cmdparams->channel->name );
+		ci->ts_lasttopic = me.now;
+		ci->ctc = 1;
+		return NS_SUCCESS;
+	}		
+	/* check if ctc has exceeded the threshold */	
+	/* should we have different thresholds for different channel sizes? */		
+	ci->ctc++;	
+	dlog( DEBUG2, "check topic flood: %d %d", ci->ctc,  fscfg.topicthreshold );
+	if( ( ci->ctc > fscfg.topicthreshold ) && ( ci->topic_locked == 0 ) ) 
+	{
+		switch( fscfg.topicfloodact ) 
+		{
+			case 0:
+				/* warn only */
+				nlog( LOG_WARNING, "Warning, possible topic flood on %s. CTC: %d/%d sec, SampleTime %d", ci->c->name, ci->ctc, period, fscfg.topicsampletime );
+				irc_chanalert( fs_bot, "Warning, possible flood on %s. CTC: %d/%d sec, SampleTime %d", ci->c->name, ci->ctc, period, fscfg.topicsampletime );
+				irc_globops( fs_bot, "Warning, possible flood on %s. CTC: %d/%d Sec, SampleTime %d", ci->c->name, ci->ctc, period, fscfg.topicsampletime );
+				break;
+			case 1:
+				/* close flood channel */
+				nlog( LOG_WARNING, "Warning, possible flood on %s. Closing channel. CTC: %d/%d sec, SampleTime %d", ci->c->name, ci->ctc, period, fscfg.topicsampletime );
+				irc_chanalert( fs_bot, "Warning, possible flood on %s. Closing channel. CTC: %d/%d sec, SampleTime %d", ci->c->name, ci->ctc, period, fscfg.topicsampletime );
+				irc_globops( fs_bot, "Warning, possible flood on %s. Closing channel. CTC: %d/%d Sec, SampleTime %d", ci->c->name, ci->ctc, period, fscfg.topicsampletime );
+				irc_chanprivmsg( fs_bot, ci->c->name, "Temporarily locking channel topic due to possible attack. Channel Topic will be re-opened in %d seconds", fscfg.chanlocktime );
+				irc_cmode( fs_bot, ci->c->name, "+t", NULL );
+				ci->topic_locked = me.now;
+				break;
+			default:
+				break;
+		}
+	}
+	/* just some record keeping */
+	if( ci->ctc > MaxCTC ) 
+	{
+		dlog( DEBUG1, "New CTC record on %s with %d Topics in %d seconds", cmdparams->channel->name, ci->ctc, period );
+		if( fscfg.verbose ) 
+		{
+			irc_chanalert( fs_bot, "New CTC record on %s with %d joins in %d seconds", cmdparams->channel->name, ci->ctc, period );
+		}
+		MaxCTC = ci->ctc;
+		strlcpy( MaxCTCChan, cmdparams->channel->name, MAXCHANLEN );
+	}
+	return NS_SUCCESS;
+}
+
 /** @brief fs_event_newchan
  *  
  *  NEWCHAN event processing
@@ -370,6 +477,19 @@ int CheckLockChan( void )
 				irc_chanprivmsg( fs_bot, ci->c->name, "Unlocking the channel now" );
 			}
 			ci->locked = 0;
+		}					
+		/* if the topic locked time plus chanlocktime is greater than current time, then unlock the channel topic */
+		if( ( ci->topic_locked > 0 ) && ( ci->topic_locked + fscfg.chanlocktime < me.now ) ) 
+		{
+			if( fscfg.topicfloodact == 1 ) 
+			{
+				irc_cmode( fs_bot, ci->c->name, "-t", NULL );
+				nlog( LOG_NOTICE, "Unlocking %s topic after flood protection timeout", ci->c->name );
+				irc_chanalert( fs_bot, "Unlocking %s topic after flood protection timeout", ci->c->name );
+				irc_globops( fs_bot, "Unlocking %s topic after flood protection timeout", ci->c->name );
+				irc_chanprivmsg( fs_bot, ci->c->name, "Unlocking the channel topic now" );
+			}
+			ci->topic_locked = 0;
 		}					
 	}
 	return NS_SUCCESS;

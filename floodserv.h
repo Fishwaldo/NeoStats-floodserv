@@ -37,5 +37,9 @@ extern const char *fs_help_set_nicksampletime[];
 extern const char *fs_help_set_verbose[];
 extern const char *fs_help_set_joinsampletime[];
 extern const char *fs_help_set_jointhreshold[];
+extern const char *fs_help_set_topicflood[];
+extern const char *fs_help_set_topicfloodact[];
+extern const char *fs_help_set_topicthreshold[];
+extern const char *fs_help_set_topicsampletime[];
 
 #endif /* _FLOODSERV_H_ */

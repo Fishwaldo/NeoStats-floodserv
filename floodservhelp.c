@@ -115,3 +115,35 @@ const char *fs_help_set_chanlocktime[] =
 	"Time in seconds to lock a channel when flood protection is enabled.",
 	NULL
 };
+
+const char *fs_help_set_topicflood[] = 
+{
+	"\2TOPICFLOOD <ON|OFF>\2",
+	"Enable topic flood protection.",
+	NULL
+};
+
+const char *fs_help_set_topicfloodact[] = 
+{
+	"\2TOPICFLOODACT <type>\2",
+	"Topic flood action.",
+	"<type> is",
+	"0 : Warn only",
+	"1 : Lock Topic",
+	NULL
+};
+
+const char *fs_help_set_topicthreshold[] = 
+{
+	"\2TOPICTHRESHOLD <number>\2",
+	"Threshold for topic floods. <number> is number of changes in TOPICSAMPLETIME seconds.",
+	NULL
+};
+
+const char *fs_help_set_topicsampletime[] = 
+{
+	"\2TOPICSAMPLETIME <seconds>\2",
+	"Sample time for flood checking. <seconds> is TOPICTHRESHOLD changes in <seconds>.",
+	NULL
+};
+
