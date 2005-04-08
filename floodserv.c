@@ -341,11 +341,6 @@ static int fs_event_topicchange( CmdParams *cmdparams )
 	{
 		return NS_SUCCESS;
 	}
-	if( IsNetSplit( cmdparams->source ) ) 
-	{
-		dlog( DEBUG1, "Ignoring netsplit nick %s", cmdparams->source->name );
-		return NS_SUCCESS;
-	}
 	ci = ( chantrack * ) GetChannelModPtr( cmdparams->channel );
 	if( !ci )
 	{
