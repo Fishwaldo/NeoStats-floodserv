@@ -137,22 +137,22 @@ ModuleInfo module_info =
 
 static bot_setting fs_settings[]=
 {
-	{"VERBOSE",		&fscfg.verbose,		SET_TYPE_BOOLEAN,	0,	0,	NS_ULEVEL_ADMIN,NULL,		fs_help_set_verbose,		NULL,	( void * )1 },
-	{"TOPICFLOOD",		&fscfg.topicflood,	SET_TYPE_BOOLEAN,	0,	0,	NS_ULEVEL_ADMIN,NULL,		fs_help_set_topicflood,		NULL,	( void * )1 },
-	{"TOPICFLOODACT",	&fscfg.topicfloodact,	SET_TYPE_INT,		0,	1,	NS_ULEVEL_ADMIN,NULL,		fs_help_set_topicfloodact,	NULL,	( void * )0 },
-	{"TOPICSAMPLETIME",	&fscfg.topicsampletime,	SET_TYPE_INT,		0,	100,	NS_ULEVEL_ADMIN,"seconds",	fs_help_set_topicsampletime,	NULL,	( void * )5 },
+	{"VERBOSE",			&fscfg.verbose,			SET_TYPE_BOOLEAN,	0,	0,		NS_ULEVEL_ADMIN,NULL,		fs_help_set_verbose,		NULL,	( void * )1 },
+	{"TOPICFLOOD",		&fscfg.topicflood,		SET_TYPE_BOOLEAN,	0,	0,		NS_ULEVEL_ADMIN,NULL,		fs_help_set_topicflood,		NULL,	( void * )1 },
+	{"TOPICFLOODACT",	&fscfg.topicfloodact,	SET_TYPE_INT,		0,	1,		NS_ULEVEL_ADMIN,NULL,		fs_help_set_topicfloodact,	NULL,	( void * )0 },
+	{"TOPICSAMPLETIME",	&fscfg.topicsampletime,	SET_TYPE_INT,		0,	100,	NS_ULEVEL_ADMIN,"seconds",	fs_help_set_topicsampletime,NULL,	( void * )5 },
 	{"TOPICTHRESHOLD",	&fscfg.topicthreshold,	SET_TYPE_INT,		0,	100,	NS_ULEVEL_ADMIN,NULL,		fs_help_set_topicthreshold,	NULL,	( void * )5 },
-	{"NICKFLOOD",		&fscfg.nickflood,	SET_TYPE_BOOLEAN,	0,	0,	NS_ULEVEL_ADMIN,NULL,		fs_help_set_nickflood,		NULL,	( void * )1 },
-	{"NICKFLOODACT",	&fscfg.nickfloodact,	SET_TYPE_INT,		0,	0,	NS_ULEVEL_ADMIN,NULL,		fs_help_set_nickfloodact,	NULL,	( void * )0 },
+	{"NICKFLOOD",		&fscfg.nickflood,		SET_TYPE_BOOLEAN,	0,	0,		NS_ULEVEL_ADMIN,NULL,		fs_help_set_nickflood,		NULL,	( void * )1 },
+	{"NICKFLOODACT",	&fscfg.nickfloodact,	SET_TYPE_INT,		0,	0,		NS_ULEVEL_ADMIN,NULL,		fs_help_set_nickfloodact,	NULL,	( void * )0 },
 	{"NICKSAMPLETIME",	&fscfg.nicksampletime,	SET_TYPE_INT,		0,	100,	NS_ULEVEL_ADMIN,"seconds",	fs_help_set_nicksampletime,	NULL,	( void * )5 },
 	{"NICKTHRESHOLD",	&fscfg.nickthreshold,	SET_TYPE_INT,		0,	100,	NS_ULEVEL_ADMIN,NULL,		fs_help_set_nickthreshold,	NULL,	( void * )5 },
-	{"JOINFLOOD",		&fscfg.joinflood,	SET_TYPE_BOOLEAN,	0,	0,	NS_ULEVEL_ADMIN,NULL,		fs_help_set_joinflood,		NULL,	( void * )1 },
-	{"JOINFLOODACT",	&fscfg.joinfloodact,	SET_TYPE_INT,		0,	1,	NS_ULEVEL_ADMIN,NULL,		fs_help_set_joinfloodact,	NULL,	( void * )0 },
+	{"JOINFLOOD",		&fscfg.joinflood,		SET_TYPE_BOOLEAN,	0,	0,		NS_ULEVEL_ADMIN,NULL,		fs_help_set_joinflood,		NULL,	( void * )1 },
+	{"JOINFLOODACT",	&fscfg.joinfloodact,	SET_TYPE_INT,		0,	1,		NS_ULEVEL_ADMIN,NULL,		fs_help_set_joinfloodact,	NULL,	( void * )0 },
 	{"JOINSAMPLETIME",	&fscfg.joinsampletime,	SET_TYPE_INT,		1,	1000,	NS_ULEVEL_ADMIN,"seconds",	fs_help_set_joinsampletime,	NULL,	( void * )5 },
 	{"JOINTHRESHOLD",	&fscfg.jointhreshold,	SET_TYPE_INT,		1,	1000,	NS_ULEVEL_ADMIN,NULL,		fs_help_set_jointhreshold,	NULL,	( void * )5 },
-	{"CHANLOCKKEY",		&fscfg.chanlockkey,	SET_TYPE_STRING,	0,	KEYLEN,	NS_ULEVEL_ADMIN,NULL,		fs_help_set_chanlockkey,	NULL,	( void * )"random" },
+	{"CHANLOCKKEY",		&fscfg.chanlockkey,		SET_TYPE_STRING,	0,	KEYLEN,	NS_ULEVEL_ADMIN,NULL,		fs_help_set_chanlockkey,	NULL,	( void * )"random" },
 	{"CHANLOCKTIME",	&fscfg.chanlocktime,	SET_TYPE_INT,		0,	600,	NS_ULEVEL_ADMIN,NULL,		fs_help_set_chanlocktime,	NULL,	( void * )30 },
-	{NULL,			NULL,			NULL,			NULL,	NULL, 	NULL,				NULL,				NULL, 	NULL },
+	{NULL,				NULL,					0,					0,	0, 		0,				NULL,				NULL, 	NULL },
 };
 
 static bot_cmd fs_commands[]=
@@ -337,7 +337,7 @@ static int fs_event_topicchange( CmdParams *cmdparams )
 		return NS_SUCCESS;
 	}
 	/* if topic already locked, nothing we can do, return */
-	if (CheckChanMode(cmdparams->channel, CMODE_TOPICLIMIT))
+	if (test_cmode(cmdparams->channel, CMODE_TOPICLIMIT))
 	{
 		return NS_SUCCESS;
 	}
