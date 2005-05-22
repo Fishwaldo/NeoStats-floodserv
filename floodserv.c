@@ -26,12 +26,8 @@
  *  - Option to ignore registered nicks in AJPP checks
  */
 
-#ifdef WIN32
-#include "modconfigwin32.h"
-#else
-#include "modconfig.h"
-#endif
 #include "neostats.h"
+#include MODULECONFIG
 #include "floodserv.h"
 
 struct fscfg 
