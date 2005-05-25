@@ -698,7 +698,7 @@ int ModSynch( void )
 	{
 		return NS_FAILURE;
 	}
-	AddTimer( TIMER_TYPE_INTERVAL, CheckLockChan, "CheckLockChan", 60 );
+	AddTimer( TIMER_TYPE_INTERVAL, CheckLockChan, "CheckLockChan", TS_ONE_MINUTE );
 	return NS_SUCCESS;
 }
 
