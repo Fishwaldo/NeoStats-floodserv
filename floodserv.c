@@ -153,8 +153,8 @@ static bot_setting fs_settings[]=
 
 static bot_cmd fs_commands[]=
 {
-	{"STATUS",	fs_cmd_status,	0,	NS_ULEVEL_OPER, fs_help_status,		fs_help_status_oneline},
-	{NULL,		NULL,			0, 	0,				NULL, 				NULL}
+	{"STATUS",	fs_cmd_status,	0,	NS_ULEVEL_OPER, fs_help_status},
+	{NULL,		NULL,			0, 	0,				NULL}
 };
 
 BotInfo fs_botinfo =

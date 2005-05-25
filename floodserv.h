@@ -24,7 +24,6 @@
 #ifndef _FLOODSERV_H_
 #define _FLOODSERV_H_
 
-extern const char fs_help_status_oneline[];
 extern const char *fs_help_status[];
 extern const char *fs_help_set_chanlockkey[];
 extern const char *fs_help_set_nickflood[];

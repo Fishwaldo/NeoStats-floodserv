@@ -23,10 +23,9 @@
 
 #include "neostats.h"
 
-const char fs_help_status_oneline[] = "Current Status";
-
 const char *fs_help_status[] = 
 {
+	"Current Status",
 	"Syntax: \2STATUS\2",
 	"",
 	"Provide you with the Current Status.",
