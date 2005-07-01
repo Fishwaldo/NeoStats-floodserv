@@ -270,15 +270,15 @@ static int fs_event_joinchan( CmdParams *cmdparams )
 		{
 			case 0:
 				/* warn only */
-				nlog( LOG_WARNING, "Warning, possible flood on %s. AJPP: %d/%d sec, SampleTime %d", ci->c->name, ci->ajpp, period, fscfg.joinsampletime );
-				irc_chanalert( fs_bot, "Warning, possible flood on %s. AJPP: %d/%d sec, SampleTime %d", ci->c->name, ci->ajpp, period, fscfg.joinsampletime );
-				irc_globops( fs_bot, "Warning, possible flood on %s. AJPP: %d/%d Sec, SampleTime %d", ci->c->name, ci->ajpp, period, fscfg.joinsampletime );
+				nlog( LOG_WARNING, "Warning, possible flood on %s. AJPP: %d/%d sec, SampleTime %d", ci->c->name, ci->ajpp, (int)period, fscfg.joinsampletime );
+				irc_chanalert( fs_bot, "Warning, possible flood on %s. AJPP: %d/%d sec, SampleTime %d", ci->c->name, ci->ajpp, (int)period, fscfg.joinsampletime );
+				irc_globops( fs_bot, "Warning, possible flood on %s. AJPP: %d/%d Sec, SampleTime %d", ci->c->name, ci->ajpp, (int)period, fscfg.joinsampletime );
 				break;
 			case 1:
 				/* close flood channel */
-				nlog( LOG_WARNING, "Warning, possible flood on %s. Closing channel. AJPP: %d/%d sec, SampleTime %d", ci->c->name, ci->ajpp, period, fscfg.joinsampletime );
-				irc_chanalert( fs_bot, "Warning, possible flood on %s. Closing channel. AJPP: %d/%d sec, SampleTime %d", ci->c->name, ci->ajpp, period, fscfg.joinsampletime );
-				irc_globops( fs_bot, "Warning, possible flood on %s. Closing channel. AJPP: %d/%d Sec, SampleTime %d", ci->c->name, ci->ajpp, period, fscfg.joinsampletime );
+				nlog( LOG_WARNING, "Warning, possible flood on %s. Closing channel. AJPP: %d/%d sec, SampleTime %d", ci->c->name, ci->ajpp, (int)period, fscfg.joinsampletime );
+				irc_chanalert( fs_bot, "Warning, possible flood on %s. Closing channel. AJPP: %d/%d sec, SampleTime %d", ci->c->name, ci->ajpp, (int)period, fscfg.joinsampletime );
+				irc_globops( fs_bot, "Warning, possible flood on %s. Closing channel. AJPP: %d/%d Sec, SampleTime %d", ci->c->name, ci->ajpp, (int)period, fscfg.joinsampletime );
 				irc_chanprivmsg( fs_bot, ci->c->name, "Temporarily closing channel due to possible floodbot attack. Channel will be re-opened in %d seconds", fscfg.chanlocktime );
 				if( !ircstrcasecmp( fscfg.chanlockkey, "random" ) )
 				{
@@ -301,10 +301,10 @@ static int fs_event_joinchan( CmdParams *cmdparams )
 	/* just some record keeping */
 	if( ci->ajpp > MaxAJPP ) 
 	{
-		dlog( DEBUG1, "New AJPP record on %s with %d joins in %d seconds", cmdparams->channel->name, ci->ajpp, period );
+		dlog( DEBUG1, "New AJPP record on %s with %d joins in %d seconds", cmdparams->channel->name, ci->ajpp, (int)period );
 		if( fscfg.verbose ) 
 		{
-			irc_chanalert( fs_bot, "New AJPP record on %s with %d joins in %d seconds", cmdparams->channel->name, ci->ajpp, period );
+			irc_chanalert( fs_bot, "New AJPP record on %s with %d joins in %d seconds", cmdparams->channel->name, ci->ajpp, (int)period );
 		}
 		MaxAJPP = ci->ajpp;
 		strlcpy( MaxAJPPChan, cmdparams->channel->name, MAXCHANLEN );
@@ -361,15 +361,15 @@ static int fs_event_topicchange( CmdParams *cmdparams )
 		{
 			case 0:
 				/* warn only */
-				nlog( LOG_WARNING, "Warning, possible topic flood on %s. CTC: %d/%d sec, SampleTime %d", ci->c->name, ci->ctc, period, fscfg.topicsampletime );
-				irc_chanalert( fs_bot, "Warning, possible flood on %s. CTC: %d/%d sec, SampleTime %d", ci->c->name, ci->ctc, period, fscfg.topicsampletime );
-				irc_globops( fs_bot, "Warning, possible flood on %s. CTC: %d/%d Sec, SampleTime %d", ci->c->name, ci->ctc, period, fscfg.topicsampletime );
+				nlog( LOG_WARNING, "Warning, possible topic flood on %s. CTC: %d/%d sec, SampleTime %d", ci->c->name, ci->ctc, (int)period, fscfg.topicsampletime );
+				irc_chanalert( fs_bot, "Warning, possible flood on %s. CTC: %d/%d sec, SampleTime %d", ci->c->name, ci->ctc, (int)period, fscfg.topicsampletime );
+				irc_globops( fs_bot, "Warning, possible flood on %s. CTC: %d/%d Sec, SampleTime %d", ci->c->name, ci->ctc, (int)period, fscfg.topicsampletime );
 				break;
 			case 1:
 				/* close flood channel */
-				nlog( LOG_WARNING, "Warning, possible flood on %s. Closing channel. CTC: %d/%d sec, SampleTime %d", ci->c->name, ci->ctc, period, fscfg.topicsampletime );
-				irc_chanalert( fs_bot, "Warning, possible flood on %s. Closing channel. CTC: %d/%d sec, SampleTime %d", ci->c->name, ci->ctc, period, fscfg.topicsampletime );
-				irc_globops( fs_bot, "Warning, possible flood on %s. Closing channel. CTC: %d/%d Sec, SampleTime %d", ci->c->name, ci->ctc, period, fscfg.topicsampletime );
+				nlog( LOG_WARNING, "Warning, possible flood on %s. Closing channel. CTC: %d/%d sec, SampleTime %d", ci->c->name, ci->ctc, (int)period, fscfg.topicsampletime );
+				irc_chanalert( fs_bot, "Warning, possible flood on %s. Closing channel. CTC: %d/%d sec, SampleTime %d", ci->c->name, ci->ctc, (int)period, fscfg.topicsampletime );
+				irc_globops( fs_bot, "Warning, possible flood on %s. Closing channel. CTC: %d/%d Sec, SampleTime %d", ci->c->name, ci->ctc, (int)period, fscfg.topicsampletime );
 				irc_chanprivmsg( fs_bot, ci->c->name, "Temporarily locking channel topic due to possible attack. Channel Topic will be re-opened in %d seconds", fscfg.chanlocktime );
 				irc_cmode( fs_bot, ci->c->name, "+t", NULL );
 				ci->topic_locked = me.now;
@@ -381,10 +381,10 @@ static int fs_event_topicchange( CmdParams *cmdparams )
 	/* just some record keeping */
 	if( ci->ctc > MaxCTC ) 
 	{
-		dlog( DEBUG1, "New CTC record on %s with %d Topics in %d seconds", cmdparams->channel->name, ci->ctc, period );
+		dlog( DEBUG1, "New CTC record on %s with %d Topics in %d seconds", cmdparams->channel->name, ci->ctc, (int)period );
 		if( fscfg.verbose ) 
 		{
-			irc_chanalert( fs_bot, "New CTC record on %s with %d joins in %d seconds", cmdparams->channel->name, ci->ctc, period );
+			irc_chanalert( fs_bot, "New CTC record on %s with %d joins in %d seconds", cmdparams->channel->name, ci->ctc, (int)period );
 		}
 		MaxCTC = ci->ctc;
 		strlcpy( MaxCTCChan, cmdparams->channel->name, MAXCHANLEN );
