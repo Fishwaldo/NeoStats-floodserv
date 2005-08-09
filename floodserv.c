@@ -444,7 +444,7 @@ static int fs_event_delchan( CmdParams *cmdparams )
  *  @return NS_SUCCESS if succeeds, NS_FAILURE if not 
  */
 
-int CheckLockChan( void ) 
+int CheckLockChan( void *userptr ) 
 {
 	hscan_t cs;
 	hnode_t *cn;
@@ -698,7 +698,7 @@ int ModSynch( void )
 	{
 		return NS_FAILURE;
 	}
-	AddTimer( TIMER_TYPE_INTERVAL, CheckLockChan, "CheckLockChan", TS_ONE_MINUTE );
+	AddTimer( TIMER_TYPE_INTERVAL, CheckLockChan, "CheckLockChan", TS_ONE_MINUTE, NULL );
 	return NS_SUCCESS;
 }
 
