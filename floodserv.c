@@ -148,13 +148,13 @@ static bot_setting fs_settings[]=
 	{"JOINTHRESHOLD",	&fscfg.jointhreshold,	SET_TYPE_INT,		1,	1000,	NS_ULEVEL_ADMIN,NULL,		fs_help_set_jointhreshold,	NULL,	( void * )5 },
 	{"CHANLOCKKEY",		&fscfg.chanlockkey,		SET_TYPE_STRING,	0,	KEYLEN,	NS_ULEVEL_ADMIN,NULL,		fs_help_set_chanlockkey,	NULL,	( void * )"random" },
 	{"CHANLOCKTIME",	&fscfg.chanlocktime,	SET_TYPE_INT,		0,	600,	NS_ULEVEL_ADMIN,NULL,		fs_help_set_chanlocktime,	NULL,	( void * )30 },
-	{NULL,				NULL,					0,					0,	0, 		0,				NULL,				NULL, 	NULL },
+	NS_SETTING_END()
 };
 
 static bot_cmd fs_commands[]=
 {
 	{"STATUS",	fs_cmd_status,	0,	NS_ULEVEL_OPER, fs_help_status},
-	{NULL,		NULL,			0, 	0,				NULL}
+	NS_CMD_END()
 };
 
 BotInfo fs_botinfo =
