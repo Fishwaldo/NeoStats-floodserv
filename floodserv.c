@@ -381,10 +381,10 @@ static int fs_event_topicchange( CmdParams *cmdparams )
 	/* just some record keeping */
 	if( ci->ctc > MaxCTC ) 
 	{
-		dlog( DEBUG1, "New CTC record on %s with %d Topics in %d seconds", cmdparams->channel->name, ci->ctc, (int)period );
+		dlog( DEBUG1, "New CTC record on %s with %d Topic Changes in %d seconds", cmdparams->channel->name, ci->ctc, (int)period );
 		if( fscfg.verbose ) 
 		{
-			irc_chanalert( fs_bot, "New CTC record on %s with %d joins in %d seconds", cmdparams->channel->name, ci->ctc, (int)period );
+			irc_chanalert( fs_bot, "New CTC record on %s with %d Topic Changes in %d seconds", cmdparams->channel->name, ci->ctc, (int)period );
 		}
 		MaxCTC = ci->ctc;
 		strlcpy( MaxCTCChan, cmdparams->channel->name, MAXCHANLEN );
