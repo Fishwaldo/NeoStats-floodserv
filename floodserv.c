@@ -179,7 +179,7 @@ ModuleEvent module_events[] =
 	{ EVENT_NEWCHAN,	fs_event_newchan,	EVENT_FLAG_IGNORE_SYNCH},
 	{ EVENT_DELCHAN,	fs_event_delchan},
 	{ EVENT_TOPIC,		fs_event_topicchange},
-	{ EVENT_NULL, 		NULL}
+	NS_EVENT_END()
 };
 
 /** @brief fs_cmd_status
@@ -695,9 +695,7 @@ int ModSynch( void )
 	SET_SEGV_LOCATION();
 	fs_bot = AddBot( &fs_botinfo );
 	if( !fs_bot ) 
-	{
 		return NS_FAILURE;
-	}
 	AddTimer( TIMER_TYPE_INTERVAL, CheckLockChan, "CheckLockChan", TS_ONE_MINUTE, NULL );
 	return NS_SUCCESS;
 }
