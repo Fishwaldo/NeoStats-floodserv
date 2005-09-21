@@ -241,6 +241,12 @@ static int fs_event_joinchan( CmdParams *cmdparams )
 	{
 		return NS_SUCCESS;
 	}
+	/* ignore services chan */
+	if( !strcasecmp(cmdparams->channel->name, me.serviceschan ) ) 
+	{
+		dlog ( DEBUG1, "Ignoring Services channel %s", cmdparams->channel->name);
+		return NS_SUCCESS;
+	}
 	if( IsNetSplit( cmdparams->source ) ) 
 	{
 		dlog( DEBUG1, "Ignoring netsplit nick %s", cmdparams->source->name );

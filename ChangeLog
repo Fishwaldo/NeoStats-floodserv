@@ -2,6 +2,7 @@ FloodServ Module for NeoStats Changelog.
 Fish (F), Mark (M), DeadNotBuried (D)
 ==============================================================================
 3.0.a3-dev
+ - Ignore Services Channel for floodchecks (F)
  - fix segfault on topic changes while syncing servers (D)
  - add support for channel topic floods (D)
 3.0.a2 - Mark (M)
