@@ -242,7 +242,7 @@ static int fs_event_joinchan( CmdParams *cmdparams )
 		return NS_SUCCESS;
 	}
 	/* ignore services chan */
-	if( !strcasecmp(cmdparams->channel->name, me.serviceschan ) ) 
+	if( IsServicesChannel( cmdparams->channel ) )
 	{
 		dlog ( DEBUG1, "Ignoring Services channel %s", cmdparams->channel->name);
 		return NS_SUCCESS;
