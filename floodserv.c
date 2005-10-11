@@ -50,15 +50,15 @@ struct fscfg
 } fscfg;
 
 /* channel flood tracking
- * ( ajpp = average joins per period )
- * ( ctc = channel topic changes )
  */
 typedef struct chantrack 
 {
 	Channel *c;
+	/* average joins per period */
 	int ajpp;
 	time_t ts_lastjoin;
 	time_t locked;
+	/* channel topic changes */
 	int ctc;
 	time_t ts_lasttopic;
 	time_t topic_locked;
@@ -146,7 +146,7 @@ static bot_setting fs_settings[]=
 	{"JOINFLOODACT",	&fscfg.joinfloodact,	SET_TYPE_INT,		0,	1,		NS_ULEVEL_ADMIN,NULL,		fs_help_set_joinfloodact,	NULL,	( void * )0 },
 	{"JOINSAMPLETIME",	&fscfg.joinsampletime,	SET_TYPE_INT,		1,	1000,	NS_ULEVEL_ADMIN,"seconds",	fs_help_set_joinsampletime,	NULL,	( void * )5 },
 	{"JOINTHRESHOLD",	&fscfg.jointhreshold,	SET_TYPE_INT,		1,	1000,	NS_ULEVEL_ADMIN,NULL,		fs_help_set_jointhreshold,	NULL,	( void * )5 },
-	{"CHANLOCKKEY",		&fscfg.chanlockkey,		SET_TYPE_STRING,	0,	KEYLEN,	NS_ULEVEL_ADMIN,NULL,		fs_help_set_chanlockkey,	NULL,	( void * )"random" },
+	{"CHANLOCKKEY",		fscfg.chanlockkey,		SET_TYPE_STRING,	0,	KEYLEN,	NS_ULEVEL_ADMIN,NULL,		fs_help_set_chanlockkey,	NULL,	( void * )"random" },
 	{"CHANLOCKTIME",	&fscfg.chanlocktime,	SET_TYPE_INT,		0,	600,	NS_ULEVEL_ADMIN,NULL,		fs_help_set_chanlocktime,	NULL,	( void * )30 },
 	NS_SETTING_END()
 };
@@ -681,9 +681,9 @@ int ModInit( void )
 	os_memset( &fscfg, 0, sizeof( fscfg ) );
 	ModuleConfig( fs_settings );
 	/* init the channel hash */	
-	joinfloodhash = hash_create( -1, 0, 0 );
+	joinfloodhash = hash_create( HASHCOUNT_T_MAX, 0, 0 );
 	/* init the nickfloodhash hash */
-	nickfloodhash = hash_create( -1, 0, 0 );
+	nickfloodhash = hash_create( HASHCOUNT_T_MAX, 0, 0 );
 	return NS_SUCCESS;
 }
 
