@@ -129,6 +129,7 @@ ModuleInfo module_info =
 	__TIME__,
 	0,
 	0,
+	0,
 };
 
 static bot_setting fs_settings[]=
