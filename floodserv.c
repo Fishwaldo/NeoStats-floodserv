@@ -73,15 +73,15 @@ typedef struct usertrack
 }usertrack;
 
 /* prototypes */
-static int fs_event_signon( CmdParams *cmdparams );
-static int fs_event_quit( CmdParams *cmdparams );
-static int fs_event_kill( CmdParams *cmdparams );
-static int fs_event_nick( CmdParams *cmdparams );
-static int fs_event_newchan( CmdParams *cmdparams );
-static int fs_event_delchan( CmdParams *cmdparams );
-static int fs_event_joinchan( CmdParams *cmdparams );
-static int fs_event_topicchange( CmdParams *cmdparams );
-static int fs_cmd_status( CmdParams *cmdparams );
+static int fs_event_signon( const CmdParams *cmdparams );
+static int fs_event_quit( const CmdParams *cmdparams );
+static int fs_event_kill( const CmdParams *cmdparams );
+static int fs_event_nick( const CmdParams *cmdparams );
+static int fs_event_newchan( const CmdParams *cmdparams );
+static int fs_event_delchan( const CmdParams *cmdparams );
+static int fs_event_joinchan( const CmdParams *cmdparams );
+static int fs_event_topicchange( const CmdParams *cmdparams );
+static int fs_cmd_status( const CmdParams *cmdparams );
 
 /* Bot pointer */
 Bot *fs_bot;
@@ -191,7 +191,7 @@ ModuleEvent module_events[] =
  *  @return NS_SUCCESS if succeeds, NS_FAILURE if not 
  */
 
-static int fs_cmd_status( CmdParams *cmdparams )
+static int fs_cmd_status( const CmdParams *cmdparams )
 {
 	SET_SEGV_LOCATION();
 	irc_prefmsg( fs_bot, cmdparams->source, "Current top AJPP %d (in %d seconds) in channel %s",
@@ -230,7 +230,7 @@ static chantrack *fs_new_channel( Channel* channel )
  *  @return NS_SUCCESS if succeeds, NS_FAILURE if not 
  */
 
-static int fs_event_joinchan( CmdParams *cmdparams )
+static int fs_event_joinchan( const CmdParams *cmdparams )
 {
 	chantrack *ci;
 	time_t period;
@@ -327,7 +327,7 @@ static int fs_event_joinchan( CmdParams *cmdparams )
  *  @return NS_SUCCESS if succeeds, NS_FAILURE if not 
  */
 
-static int fs_event_topicchange( CmdParams *cmdparams )
+static int fs_event_topicchange( const CmdParams *cmdparams )
 {
 	chantrack *ci;
 	time_t period;
@@ -407,7 +407,7 @@ static int fs_event_topicchange( CmdParams *cmdparams )
  *  @return NS_SUCCESS if succeeds, NS_FAILURE if not 
  */
 
-static int fs_event_newchan( CmdParams *cmdparams )
+static int fs_event_newchan( const CmdParams *cmdparams )
 {
 	SET_SEGV_LOCATION();
 	fs_new_channel( cmdparams->channel );
@@ -424,7 +424,7 @@ static int fs_event_newchan( CmdParams *cmdparams )
  *  @return NS_SUCCESS if succeeds, NS_FAILURE if not 
  */
 
-static int fs_event_delchan( CmdParams *cmdparams )
+static int fs_event_delchan( const CmdParams *cmdparams )
 {
 	chantrack *ci;
 	hnode_t *cn;
@@ -501,7 +501,7 @@ int CheckLockChan( void *userptr )
  *  @return NS_SUCCESS if succeeds, NS_FAILURE if not 
  */
 
-static int fs_event_nick( CmdParams *cmdparams ) 
+static int fs_event_nick( const CmdParams *cmdparams ) 
 {
 	hnode_t *nfnode;
 	usertrack *flooduser;
@@ -546,7 +546,7 @@ static int fs_event_nick( CmdParams *cmdparams )
  *  @return NS_SUCCESS if succeeds, NS_FAILURE if not 
  */
 
-static int fs_event_signon( CmdParams *cmdparams )
+static int fs_event_signon( const CmdParams *cmdparams )
 {
 	usertrack *flooduser;
 
@@ -569,7 +569,7 @@ static int fs_event_signon( CmdParams *cmdparams )
  *  @return NS_SUCCESS if succeeds, NS_FAILURE if not 
  */
 
-static int fs_event_quit( CmdParams *cmdparams ) 
+static int fs_event_quit( const CmdParams *cmdparams ) 
 {
 	hnode_t *nfnode;
 	usertrack *flooduser;
@@ -596,7 +596,7 @@ static int fs_event_quit( CmdParams *cmdparams )
  *  @return NS_SUCCESS if succeeds, NS_FAILURE if not 
  */
 
-static int fs_event_kill( CmdParams *cmdparams ) 
+static int fs_event_kill( const CmdParams *cmdparams ) 
 {
 	hnode_t *nfnode;
 	usertrack *flooduser;
