@@ -149,16 +149,7 @@
 			RelativePath=".\ChangeLog">
 		</File>
 		<File
-			RelativePath=".\configure.in">
-		</File>
-		<File
 			RelativePath=".\License">
-		</File>
-		<File
-			RelativePath=".\Makefile.in">
-		</File>
-		<File
-			RelativePath=".\modconfig.h.in">
 		</File>
 		<File
 			RelativePath=".\README.FloodServ">
