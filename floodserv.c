@@ -30,7 +30,7 @@
 #include MODULECONFIG
 #include "floodserv.h"
 
-struct fscfg 
+static struct fscfg 
 {
 	int verbose;
 	int topicflood;
@@ -84,7 +84,7 @@ static int fs_event_topicchange( const CmdParams *cmdparams );
 static int fs_cmd_status( const CmdParams *cmdparams );
 
 /* Bot pointer */
-Bot *fs_bot;
+static Bot *fs_bot;
 
 /* the hash that contains the channels we are tracking */
 static hash_t *joinfloodhash;
@@ -101,14 +101,14 @@ static int MaxCTC = 0;
 static char MaxCTCChan[MAXCHANLEN];
 
 /** about info */
-const char *fs_about[] = 
+static const char *fs_about[] = 
 {
 	"Flood protection service",
 	NULL
 };
 
 /** copyright info */
-const char *fs_copyright[] = 
+static const char *fs_copyright[] = 
 {
 	"Copyright (c) 1999-2005, NeoStats",
 	"http://www.neostats.net/",
@@ -154,11 +154,11 @@ static bot_setting fs_settings[]=
 
 static bot_cmd fs_commands[]=
 {
-	{"STATUS",	fs_cmd_status,	0,	NS_ULEVEL_OPER, fs_help_status},
+	{"STATUS",	fs_cmd_status,	0,	NS_ULEVEL_OPER, fs_help_status, 0, NULL, NULL},
 	NS_CMD_END()
 };
 
-BotInfo fs_botinfo =
+static BotInfo fs_botinfo =
 {
 	"FloodServ",
 	"FloodServ1",
@@ -172,14 +172,14 @@ BotInfo fs_botinfo =
 
 ModuleEvent module_events[] = 
 {
-	{ EVENT_NICK,		fs_event_nick},
+	{ EVENT_NICK,		fs_event_nick, 0},
 	{ EVENT_SIGNON, 	fs_event_signon,	EVENT_FLAG_IGNORE_SYNCH},
-	{ EVENT_QUIT, 		fs_event_quit},
-	{ EVENT_KILL, 		fs_event_kill},
-	{ EVENT_JOIN, 		fs_event_joinchan},
+	{ EVENT_QUIT, 		fs_event_quit, 0},
+	{ EVENT_KILL, 		fs_event_kill, 0},
+	{ EVENT_JOIN, 		fs_event_joinchan, 0},
 	{ EVENT_NEWCHAN,	fs_event_newchan,	EVENT_FLAG_IGNORE_SYNCH},
-	{ EVENT_DELCHAN,	fs_event_delchan},
-	{ EVENT_TOPIC,		fs_event_topicchange},
+	{ EVENT_DELCHAN,	fs_event_delchan, 0},
+	{ EVENT_TOPIC,		fs_event_topicchange, 0},
 	NS_EVENT_END()
 };
 
@@ -411,7 +411,7 @@ static int fs_event_topicchange( const CmdParams *cmdparams )
 static int fs_event_newchan( const CmdParams *cmdparams )
 {
 	SET_SEGV_LOCATION();
-	fs_new_channel( cmdparams->channel );
+	(void)fs_new_channel( cmdparams->channel );
 	return NS_SUCCESS;
 }
 
@@ -451,7 +451,7 @@ static int fs_event_delchan( const CmdParams *cmdparams )
  *  @return NS_SUCCESS if succeeds, NS_FAILURE if not 
  */
 
-int CheckLockChan( void *userptr ) 
+static int CheckLockChan( void *userptr ) 
 {
 	hscan_t cs;
 	hnode_t *cn;
@@ -623,7 +623,7 @@ static int fs_event_kill( const CmdParams *cmdparams )
  *
  *  @return none
  */
-void FiniJoinFlood( void )
+static void FiniJoinFlood( void )
 {
 	hscan_t scan;
 	hnode_t *node;
@@ -649,7 +649,7 @@ void FiniJoinFlood( void )
  *
  *  @return none
  */
-void FiniNickFlood( void )
+static void FiniNickFlood( void )
 {
 	hscan_t scan;
 	hnode_t *node;
