@@ -287,7 +287,7 @@ static int fs_event_joinchan( const CmdParams *cmdparams )
 				irc_chanalert( fs_bot, "Warning, possible flood on %s. Closing channel. AJPP: %d/%d sec, SampleTime %d", ci->c->name, ci->ajpp, (int)period, fscfg.joinsampletime );
 				irc_globops( fs_bot, "Warning, possible flood on %s. Closing channel. AJPP: %d/%d Sec, SampleTime %d", ci->c->name, ci->ajpp, (int)period, fscfg.joinsampletime );
 				irc_chanprivmsg( fs_bot, ci->c->name, "Temporarily closing channel due to possible floodbot attack. Channel will be re-opened in %d seconds", fscfg.chanlocktime );
-				if( !ircstrcasecmp( fscfg.chanlockkey, "random" ) )
+				if( ircstrcasecmp( fscfg.chanlockkey, "random" ) == 0 )
 				{
 					char *key;
 
