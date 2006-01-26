@@ -1,5 +1,5 @@
 /* NeoStats - IRC Statistical Services 
-** Copyright (c) 1999-2005 Adam Rutter, Justin Hammond, Mark Hetherington
+** Copyright (c) 1999-2006 Adam Rutter, Justin Hammond, Mark Hetherington
 ** http://www.neostats.net/
 **
 **  This program is free software; you can redistribute it and/or modify
@@ -110,7 +110,7 @@ static const char *fs_about[] =
 /** copyright info */
 static const char *fs_copyright[] = 
 {
-	"Copyright (c) 1999-2005, NeoStats",
+	"Copyright (c) 1999-2006, NeoStats",
 	"http://www.neostats.net/",
 	NULL
 };
