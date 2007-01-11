@@ -583,7 +583,7 @@ static int fs_event_quit( const CmdParams *cmdparams )
 		flooduser = hnode_get( nfnode );
 		hash_delete( nickfloodhash, nfnode );
 		FreeUserModPtr( flooduser->u );
-       	hnode_destroy( nfnode );
+		hnode_destroy( nfnode );
 	}
 	return NS_SUCCESS;
 }

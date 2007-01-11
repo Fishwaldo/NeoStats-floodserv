@@ -80,6 +80,12 @@ dnl Checks for programs.
 AC_PROG_CC
 AC_PROG_INSTALL 
 
+AC_ARG_WITH(distversion, [    --with-distversion - Version Name to use for
+making distributions],
+[DISTDIRVERSION="$PACKAGE-$VERSION-$withval"],
+[DISTDIRVERSION="$PACKAGE-$VERSION"])
+AC_SUBST(DISTDIRVERSION)
+
 AC_SUBST(DIRINST)
 AC_SUBST(MAKEDEPENDENCIES)
 AC_SUBST(CFLAGS)
