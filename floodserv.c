@@ -176,7 +176,7 @@ ModuleEvent module_events[] =
 	{ EVENT_SIGNON, 	fs_event_signon,	EVENT_FLAG_IGNORE_SYNCH},
 	{ EVENT_QUIT, 		fs_event_quit, 0},
 	{ EVENT_KILL, 		fs_event_kill, 0},
-	{ EVENT_JOIN, 		fs_event_joinchan, 0},
+	{ EVENT_JOIN, 		fs_event_joinchan, 	EVENT_FLAG_IGNORE_SYNCH},
 	{ EVENT_NEWCHAN,	fs_event_newchan,	EVENT_FLAG_IGNORE_SYNCH},
 	{ EVENT_DELCHAN,	fs_event_delchan, 0},
 	{ EVENT_TOPIC,		fs_event_topicchange, 0},
