@@ -1,11 +1,14 @@
 FloodServ Module for NeoStats Changelog.
 Fish (F), Mark (M), DeadNotBuried (D)
 ==============================================================================
-3.0.a3-dev
+3.0.a4
+ - fix nickfloodact setting (F)
+
+3.0.a3
  - Ignore Services Channel for floodchecks (F)
  - fix segfault on topic changes while syncing servers (D)
  - add support for channel topic floods (D)
- 
+
 3.0.a2 - Mark (M)
  - Update settings table to a2 compatible format. (M)
  - Add support for random keys based on idea from DNB. (M)

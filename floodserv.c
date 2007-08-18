@@ -140,7 +140,7 @@ static bot_setting fs_settings[]=
 	{"TOPICSAMPLETIME",	&fscfg.topicsampletime,	SET_TYPE_INT,		0,	100,	NS_ULEVEL_ADMIN,"seconds",	fs_help_set_topicsampletime,NULL,	( void * )5 },
 	{"TOPICTHRESHOLD",	&fscfg.topicthreshold,	SET_TYPE_INT,		0,	100,	NS_ULEVEL_ADMIN,NULL,		fs_help_set_topicthreshold,	NULL,	( void * )5 },
 	{"NICKFLOOD",		&fscfg.nickflood,		SET_TYPE_BOOLEAN,	0,	0,		NS_ULEVEL_ADMIN,NULL,		fs_help_set_nickflood,		NULL,	( void * )1 },
-	{"NICKFLOODACT",	&fscfg.nickfloodact,	SET_TYPE_INT,		0,	0,		NS_ULEVEL_ADMIN,NULL,		fs_help_set_nickfloodact,	NULL,	( void * )0 },
+	{"NICKFLOODACT",	&fscfg.nickfloodact,	SET_TYPE_INT,		0,	1,		NS_ULEVEL_ADMIN,NULL,		fs_help_set_nickfloodact,	NULL,	( void * )0 },
 	{"NICKSAMPLETIME",	&fscfg.nicksampletime,	SET_TYPE_INT,		0,	100,	NS_ULEVEL_ADMIN,"seconds",	fs_help_set_nicksampletime,	NULL,	( void * )5 },
 	{"NICKTHRESHOLD",	&fscfg.nickthreshold,	SET_TYPE_INT,		0,	100,	NS_ULEVEL_ADMIN,NULL,		fs_help_set_nickthreshold,	NULL,	( void * )5 },
 	{"JOINFLOOD",		&fscfg.joinflood,		SET_TYPE_BOOLEAN,	0,	0,		NS_ULEVEL_ADMIN,NULL,		fs_help_set_joinflood,		NULL,	( void * )1 },
@@ -172,14 +172,14 @@ static BotInfo fs_botinfo =
 
 ModuleEvent module_events[] = 
 {
-	{ EVENT_NICK,		fs_event_nick, 0},
+	{ EVENT_NICK,		fs_event_nick, EVENT_FLAG_IGNORE_SYNCH},
 	{ EVENT_SIGNON, 	fs_event_signon,	EVENT_FLAG_IGNORE_SYNCH},
 	{ EVENT_QUIT, 		fs_event_quit, 0},
 	{ EVENT_KILL, 		fs_event_kill, 0},
 	{ EVENT_JOIN, 		fs_event_joinchan, 	EVENT_FLAG_IGNORE_SYNCH},
 	{ EVENT_NEWCHAN,	fs_event_newchan,	EVENT_FLAG_IGNORE_SYNCH},
 	{ EVENT_DELCHAN,	fs_event_delchan, 0},
-	{ EVENT_TOPIC,		fs_event_topicchange, 0},
+	{ EVENT_TOPIC,		fs_event_topicchange, EVENT_FLAG_IGNORE_SYNCH},
 	NS_EVENT_END()
 };
 
