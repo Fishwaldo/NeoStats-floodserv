@@ -1658,7 +1658,7 @@ _ACEOF
 
 DIRINST=~/NeoStats3.0/
 
-CFLAGS="$CFLAGS -O2 -fno-strict-aliasing"
+CFLAGS="$CFLAGS -O2 -fno-strict-aliasing -fPIC -DPIC"
 
 
 case "$host_os" in
